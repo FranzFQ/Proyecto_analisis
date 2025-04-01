@@ -4,7 +4,7 @@ import sys
 def main():
     ventana = Ventana()
     app = ventana.app
-    ventana.ventana_principal()
+    ventana.inicio()
     sys.exit(app.exec())
     
 main()   
