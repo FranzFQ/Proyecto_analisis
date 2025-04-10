@@ -1,43 +1,55 @@
-import mysql.connector
+import pymysql
+from pymysql import cursors
+
 
 class BaseDatos:
     def __init__(self, user, password):
-        self.conexion = mysql.connector.connect(
-            host = "localhost",
-            user = user,
-            password = password,
-            database = 'modelo_proyecto')
-        
+        self.conexion = pymysql.connect(
+            host="localhost",
+            user=user,
+            password=password,
+            database="modelo_proyecto",
+            cursorclass=cursors.DictCursor)  # Para obtener resultados como diccionarios
+
     def agregar_producto(self, nombre, precio, stock, descripcion, existencia_minima):
-        cursor = self.conexion.cursor()
-        cursor.execute(f"INSERT INTO `modelo_proyecto`.`producto` (`nombre`, `precio`, `stock`, `descripcion`, `costo`, `stock_minimo`) VALUES ('{nombre}', {precio}, {stock},'{descripcion}', {precio - (precio * .15)}, {existencia_minima});") #cambiar nombre de la base de datos y la tabla
+        with self.conexion.cursor() as cursor:
+            sql = """INSERT INTO modelo_proyecto.producto 
+                    (nombre, precio, stock, descripcion, costo, stock_minimo) 
+                    VALUES (%s, %s, %s, %s, %s, %s)"""
+            costo = precio - (precio * 0.15)
+            cursor.execute(sql, (nombre, precio, stock, descripcion, costo, existencia_minima))
         self.conexion.commit()
-        cursor.close()
 
     def obtener_productos(self):
-        cursor = self.conexion.cursor()
-        #inventario = [["1", "Caja de lapices","2","15Q", "Descripcion 1"]
-        cursor.execute("SELECT id, nombre, stock, precio, descripcion, costo FROM modelo_proyecto.producto")
-        resultado = cursor.fetchall()
-        cursor.close()
-        return resultado
+        with self.conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, nombre, stock, precio, descripcion, costo 
+                FROM modelo_proyecto.producto
+            """)
+            return cursor.fetchall()
 
     def eliminar_producto(self, id):
-        cursor = self.conexion.cursor()
-        cursor.execute(f"DELETE FROM producto WHERE id = {id}")
+        with self.conexion.cursor() as cursor:
+            cursor.execute("DELETE FROM producto WHERE id = %s", (id,))
         self.conexion.commit()
-        cursor.close()
 
     def buscar_producto_por_nombre(self, nombre):
-        cursor = self.conexion.cursor()
-        cursor.execute(f"SELECT id, nombre, stock, precio, descripcion, costo FROM modelo_proyecto.producto WHERE nombre LIKE '%{nombre}%'")
-        resultado = cursor.fetchall()
-        cursor.close()
-        return resultado
+        with self.conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, nombre, stock, precio, descripcion, costo 
+                FROM modelo_proyecto.producto 
+                WHERE nombre LIKE %s
+            """, (f"%{nombre}%",))
+            return cursor.fetchall()
 
     def modificar_producto(self, id, nombre, precio, descripcion, stock, existencia_minima):
-        cursor = self.conexion.cursor()
-        cursor.execute(f"UPDATE producto SET nombre = '{nombre}', precio = '{precio}', descripcion = '{descripcion}', stock = '{stock}', stock_minimo = '{existencia_minima}', costo = '{precio - (precio * .15)}' WHERE id = {id}")
+        with self.conexion.cursor() as cursor:
+            sql = """
+                UPDATE producto 
+                SET nombre = %s, precio = %s, descripcion = %s, 
+                    stock = %s, stock_minimo = %s, costo = %s 
+                WHERE id = %s
+            """
+            costo = precio - (precio * 0.15)
+            cursor.execute(sql, (nombre, precio, descripcion, stock, existencia_minima, costo, id))
         self.conexion.commit()
-        cursor.close()
-
