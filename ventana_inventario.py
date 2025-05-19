@@ -4,15 +4,16 @@ from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor
 from PyQt6.QtCore import Qt, QSize
 
 class Ventana_inventario(Codigo):
-    def __init__(self, main_layout, botones, base_datos):
+    def __init__(self, main_layout, botones, base_datos, nivel):
         super().__init__()
-        self.layout2 = main_layout
+        self.layout = main_layout
         self.botones = botones
         self.base_datos = base_datos
+        self.nivel = nivel
 
     def inventario(self):
-        self.limpieza_layout(self.layout2)
-        self.recoloreas_botones(self.botones)
+        self.limpieza_layout(self.layout)
+        self.color_acceso_nivel(self.nivel, self.botones)
         self.color_boton_oprimido(self.botones[3])
         self.activar_botones(self.botones)
         self.botones[3].setEnabled(False)
@@ -56,12 +57,12 @@ class Ventana_inventario(Codigo):
         self.boton_busqueda.clicked.connect(self.buscar_producto)
         
 
-        self.ingreso_busqueda_inventario = QLineEdit()
-        self.ingreso_busqueda_inventario.setPlaceholderText("Ingrese el nombre del producto...")
-        self.color_linea(self.ingreso_busqueda_inventario)
-        self.ingreso_busqueda_inventario.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.ingreso_busqueda_inventario.setFixedSize(400, 80)
-        self.ingreso_busqueda_inventario.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.ingreso_busqueda = QLineEdit()
+        self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")
+        self.color_linea(self.ingreso_busqueda)
+        self.ingreso_busqueda.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ingreso_busqueda.setFixedSize(400, 80)
+        self.ingreso_busqueda.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         # creacion de tabla,
         # Modificar desde la base de datos
@@ -69,68 +70,84 @@ class Ventana_inventario(Codigo):
         inventario = self.base_datos.obtener_productos()  # Esto devuelve la lista de diccionarios
 
         # Crear la tabla con el número correcto de filas y columnas
-        # Las columnas son: ID, Nombre, Existencias, Precio, Descripción, Costo (6 columnas)
-        self.tabla_inventario = QTableWidget(len(inventario), 6)
-        self.tabla_inventario.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        # Las columnas son: ID, Nombre, Existencias, Precio, Descripción, Costo (6 columnas), existencia minima
+        self.tabla = QTableWidget(len(inventario), 7)
+        self.tabla.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         # Define los encabezados de las columnas
-        self.tabla_inventario.setHorizontalHeaderLabels(["ID", "Nombre", "Existencias", "Precio", "Descripcion", "Costo"])
+        self.tabla.setHorizontalHeaderLabels(["ID", "Nombre", "Descripcion", "Existencias", "Precio", "Costo", "Existencia mínima"])
 
         # Llenar la tabla con los datos
         for fila, producto in enumerate(inventario):
             # Convertir los valores a strings (excepto los que ya lo son)
+            # Si la existencia es menor a la minima, cambiar el color de la celda
+
+            
             id_item = QTableWidgetItem(str(producto['id']))
             nombre_item = QTableWidgetItem(producto['nombre'])
-            stock_item = QTableWidgetItem(str(producto['stock']))
-            precio_item = QTableWidgetItem(f"Q{producto['precio']:.2f}")  # Formato con 2 decimales
             descripcion_item = QTableWidgetItem(producto['descripcion'])
+            precio_item = QTableWidgetItem(f"Q{producto['precio']:.2f}")  # Formato con 2 decimales
             costo_item = QTableWidgetItem(f"Q{producto['costo']:.2f}")  # Formato con 2 decimales
+            existencia_minima_item = QTableWidgetItem(str(producto['stock_minimo']))
             
             # Añadir items a la tabla
-            self.tabla_inventario.setItem(fila, 0, id_item)
-            self.tabla_inventario.setItem(fila, 1, nombre_item)
-            self.tabla_inventario.setItem(fila, 2, stock_item)
-            self.tabla_inventario.setItem(fila, 3, precio_item)
-            self.tabla_inventario.setItem(fila, 4, descripcion_item)
-            self.tabla_inventario.setItem(fila, 5, costo_item)
+            self.tabla.setItem(fila, 0, id_item)
+            self.tabla.setItem(fila, 1, nombre_item)
+            self.tabla.setItem(fila, 2, descripcion_item)
+
+
+            if producto['stock'] < producto['stock_minimo']:
+                self.tabla.setItem(fila, 3, QTableWidgetItem(str(producto['stock'])))
+                self.tabla.item(fila, 3).setBackground(QBrush(QColor(235, 111, 84)))
+            else:
+                self.tabla.setItem(fila, 3, QTableWidgetItem(str(producto['stock'])))
+
+            self.tabla.setItem(fila, 4, precio_item)
+            self.tabla.setItem(fila, 5, costo_item)
+            self.tabla.setItem(fila, 6, existencia_minima_item)
             
             # Configurar flags para todos los items
             for col in range(6):
-                item = self.tabla_inventario.item(fila, col)
+                item = self.tabla.item(fila, col)
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
 
         # Opcional: Ajustar el tamaño de las columnas al contenido
-        self.tabla_inventario.resizeColumnsToContents()
+        # self.tabla.resizeColumnsToContents()
+
         #Modificacion del color, bordes y fondo de la tabla
-        self.color_tabla(self.tabla_inventario)
-        self.tabla_inventario.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.tabla_inventario.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.color_tabla(self.tabla)
+        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.tabla.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout3.addWidget(self.boton_cancelar_venta)
         layout3.addWidget(self.boton_eliminar)
         layout3.addWidget(self.boton_agregar)
         layout3.addWidget(self.boton_busqueda)
-        layout3.addWidget(self.ingreso_busqueda_inventario)
+        layout3.addWidget(self.ingreso_busqueda)
 
-        layout4.addWidget(self.tabla_inventario)
+        layout4.addWidget(self.tabla)
         
         sub_layout.addLayout(layout3)
         sub_layout.addLayout(layout4)
-        self.main_layout_ventana_inventario.addItem(self.espacio(60, 60))
+        self.main_layout_ventana_inventario.addItem(self.espacio(35, 35))
         self.main_layout_ventana_inventario.addLayout(sub_layout)
-        self.layout2.addLayout(self.main_layout_ventana_inventario)
+        self.layout.addLayout(self.main_layout_ventana_inventario)
 
     def llenar_campos(self, row):
-        self.nombre_producto = self.tabla_inventario.item(row, 1).text()
-        self.existencia_producto = self.tabla_inventario.item(row, 2).text()
-        self.precio_producto = self.tabla_inventario.item(row, 3).text()
-        self.descripcion_producto = self.tabla_inventario.item(row, 4).text()
-
-
+        self.nombre_producto = self.tabla.item(row, 1).text()
+        # self.existencia_producto = self.tabla.item(row, 2).text()
+        self.descripcion_producto = self.tabla.item(row, 2).text()
+        
+        self.precio_producto = self.tabla.item(row, 4).text()
+        self.existencia_minima = self.tabla.item(row, 6).text()
+        # Quitar el formato de moneda
+        self.precio_producto = self.precio_producto.replace("Q", "")
         self.ingreso_nombre_producto.setText(self.nombre_producto)
-        self.ingreso_existencia_producto.setText(self.existencia_producto)
+
         self.ingreso_precio_producto.setText(self.precio_producto)
+        # self.ingreso_existencia_producto.setText(self.existencia_producto)
         self.ingreso_descripcion_producto.setText(self.descripcion_producto)
+        self.ingreso_existencia_minima_producto.setText(self.existencia_minima)
 
 
     def agregar_producto(self):
@@ -155,7 +172,6 @@ class Ventana_inventario(Codigo):
         nombre_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         nombre_producto.setStyleSheet("Color: black")
 
-
         self.ingreso_nombre_producto = QLineEdit()
         self.color_linea(self.ingreso_nombre_producto)
         self.ingreso_nombre_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -164,7 +180,6 @@ class Ventana_inventario(Codigo):
         existencia_producto = QLabel("Existencias del producto: ")
         existencia_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         existencia_producto.setStyleSheet("Color: black")
-
 
         self.ingreso_existencia_producto = QLineEdit()
         self.color_linea(self.ingreso_existencia_producto)
@@ -176,17 +191,15 @@ class Ventana_inventario(Codigo):
         precio_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         precio_producto.setStyleSheet("Color: black")
 
-
         self.ingreso_precio_producto = QLineEdit()
         self.color_linea(self.ingreso_precio_producto)
 
         self.ingreso_precio_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.ingreso_precio_producto.setFixedWidth(200)
 
-        descripcion_producto = QLabel("Descripcion del producto: ")
+        descripcion_producto = QLabel("Descripción del producto: ")
         descripcion_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         descripcion_producto.setStyleSheet("Color: black")
-
 
         # Existencia mínima
         existencia_minima_producto = QLabel("Existencia mínima del producto: ")
@@ -223,9 +236,9 @@ class Ventana_inventario(Codigo):
         layout2.addWidget(nombre_producto, 0, 0)
         layout2.addWidget(self.ingreso_nombre_producto, 0, 1)
 
-        layout2.addItem(self.espacio(30, 30), 1, 0)
-        layout2.addWidget(existencia_producto, 2, 0)
-        layout2.addWidget(self.ingreso_existencia_producto, 2, 1)
+        # layout2.addItem(self.espacio(30, 30), 1, 0)
+        # layout2.addWidget(existencia_producto, 2, 0)
+        # layout2.addWidget(self.ingreso_existencia_producto, 2, 1)
 
         layout2.addItem(self.espacio(30, 30), 3, 0)
         layout2.addWidget(precio_producto, 4, 0)
@@ -254,35 +267,50 @@ class Ventana_inventario(Codigo):
 
     def buscar_producto(self):
         # Buscar el producto por nombre en la base de datos
-        nombre_producto = self.ingreso_busqueda_inventario.text()
+        nombre_producto = self.ingreso_busqueda.text()
         resultado = self.base_datos.buscar_producto_por_nombre(nombre_producto)
-        print(resultado)
         
-        if resultado != []:
+        if len(resultado) != 0:
             # Limpiar la tabla antes de mostrar los resultados
-            self.tabla_inventario.clearContents()
-            self.tabla_inventario.setRowCount(len(resultado))
-            
-            for i, producto in enumerate(resultado):
-                for j, valor in enumerate(producto):
-                    self.tabla_inventario.setItem(i, j, QTableWidgetItem(str(valor)))
+            self.tabla.clearContents()
+            self.tabla.setRowCount(len(resultado))
+            # Llenar la tabla con los resultados de la búsqueda
+            for fila, producto in enumerate(resultado):
+                id_item = QTableWidgetItem(str(producto['id']))
+                nombre_item = QTableWidgetItem(producto['nombre'])
+                descripcion_item = QTableWidgetItem(producto['descripcion'])
+                existencia_item = QTableWidgetItem(str(producto['stock']))
+                precio_item = QTableWidgetItem(f"Q{producto['precio']:.2f}")
+                costo_item = QTableWidgetItem(f"Q{producto['costo']:.2f}")
+                existencia_minima_item = QTableWidgetItem(str(producto['stock_minimo']))
+
+                # Añadir items a la tabla
+                self.tabla.setItem(fila, 0, id_item)
+                self.tabla.setItem(fila, 1, nombre_item)
+                self.tabla.setItem(fila, 2, descripcion_item)
+                self.tabla.setItem(fila, 3, existencia_item)
+                self.tabla.setItem(fila, 4, precio_item)
+                self.tabla.setItem(fila, 5, costo_item)
+                self.tabla.setItem(fila, 6, existencia_minima_item)
         else:
             self.mensaje_error("Error", "No se encontraron productos con ese nombre")
 
+        self.ingreso_busqueda.clear()
+
     def eliminar_producto(self):
         # Eliminar el producto seleccionado en la tabla
-        fila = self.tabla_inventario.currentRow()
+        fila = self.tabla.currentRow()
         if fila != -1:
             # Ventana para confirmar eliminacion
             self.confirmar_eliminacion(fila)
             
         else:
-            self.mensaje_error("Error", "No se ha seleccionado ningun producto")
+            self.mensaje_error("Error", "No se ha seleccionado ningún producto")
 
     def editar_producto(self):
         self.boton_agregar.setEnabled(False)
         self.boton_cancelar_venta.setEnabled(False)
-        self.tabla_inventario.cellClicked.connect(self.llenar_campos)
+        self.tabla.cellClicked.connect(self.llenar_campos)
         self.main_layout_editar_producto = QHBoxLayout()
         layout_espacio = QVBoxLayout()
         layout_espacio.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -307,14 +335,14 @@ class Ventana_inventario(Codigo):
         self.ingreso_nombre_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.ingreso_nombre_producto.setFixedWidth(200)
 
-        existencia_producto = QLabel("Existencias del producto: ")
-        existencia_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        existencia_producto.setStyleSheet("Color: black")
+        # existencia_producto = QLabel("Existencias del producto: ")
+        # existencia_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        # existencia_producto.setStyleSheet("Color: black")
 
-        self.ingreso_existencia_producto = QLineEdit()
-        self.color_linea(self.ingreso_existencia_producto)
-        self.ingreso_existencia_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.ingreso_existencia_producto.setFixedWidth(200)
+        # self.ingreso_existencia_producto = QLineEdit()
+        # self.color_linea(self.ingreso_existencia_producto)
+        # self.ingreso_existencia_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        # self.ingreso_existencia_producto.setFixedWidth(200)
 
         precio_producto = QLabel("Precio del producto: ")
         precio_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -325,7 +353,7 @@ class Ventana_inventario(Codigo):
         self.ingreso_precio_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.ingreso_precio_producto.setFixedWidth(200)
 
-        descripcion_producto = QLabel("Descripcion del producto: ")
+        descripcion_producto = QLabel("Descripción del producto: ")
         descripcion_producto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         descripcion_producto.setStyleSheet("Color: black")
 
@@ -363,9 +391,9 @@ class Ventana_inventario(Codigo):
         layout2.addWidget(nombre_producto, 0, 0)
         layout2.addWidget(self.ingreso_nombre_producto, 0, 1)
 
-        layout2.addItem(self.espacio(30, 30), 1, 0)
-        layout2.addWidget(existencia_producto, 2, 0)
-        layout2.addWidget(self.ingreso_existencia_producto, 2, 1)
+        # layout2.addItem(self.espacio(30, 30), 1, 0)
+        # layout2.addWidget(existencia_producto, 2, 0)
+        # layout2.addWidget(self.ingreso_existencia_producto, 2, 1)
 
         layout2.addItem(self.espacio(30, 30), 3, 0)
         layout2.addWidget(precio_producto, 4, 0)
@@ -396,20 +424,20 @@ class Ventana_inventario(Codigo):
         aviso.setStyleSheet("QMessageBox { color: black; background-color: #36dfea;} QPushButton {color: black; background-color: #22a4ac;} QLabel{color: black;}")
         aviso.setWindowIcon(QIcon("imagenes/infomation.ico"))
         aviso.setWindowTitle("¿Eliminar producto?") 
-        aviso.setText("Seguro que quiere eliminar el producto seleccionado")
+        aviso.setText("¿Seguro que desea eliminar el producto seleccionado?")
         aviso.setIcon(QMessageBox.Icon.Information)
         aviso.addButton("Si", QMessageBox.ButtonRole.YesRole)
         aviso.addButton("No", QMessageBox.ButtonRole.NoRole)
         respuesta = aviso.exec()
         if respuesta == 2:
-            id_producto = self.tabla_inventario.item(fila, 0).text()
+            id_producto = self.tabla.item(fila, 0).text()
             self.base_datos.eliminar_producto(id_producto)
-            self.tabla_inventario.removeRow(fila)
+            self.tabla.removeRow(fila)
             self.limpieza_layout(self.main_layout_ventana_inventario)
             self.inventario()
             self.mensaje_informacion("Producto eliminado", "El producto ha sido eliminado correctamente")
         elif respuesta == 3:
-            self.mensaje_informacion("Eliminacion cancelada", "La eliminacion se ha cancelado correctamente")
+            self.mensaje_informacion("Eliminación cancelada", "El producto no ha sido eliminado")
 
     def confirmar_edicion(self):
         self.limpieza_layout(self.main_layout_editar_producto)
@@ -417,13 +445,12 @@ class Ventana_inventario(Codigo):
         self.boton_cancelar_venta.setEnabled(True)
         # Implementar función para guardar los cambios en la base de datos
         nombre = self.ingreso_nombre_producto.text()
-        existencia = int(self.ingreso_existencia_producto.text())
-        precio = float(self.ingreso_precio_producto.text())
+        precio = float(self.ingreso_precio_producto.text().replace("Q", ""))
         descripcion = self.ingreso_descripcion_producto.text()
-        id_producto = int(self.tabla_inventario.item(self.tabla_inventario.currentRow(), 0).text())
+        id_producto = int(self.tabla.item(self.tabla.currentRow(), 0).text())
         existencia_minima = int(self.ingreso_existencia_minima_producto.text())
         # Aquí se debe de modificar el producto en la base de datos
-        self.base_datos.modificar_producto(id_producto, nombre, precio, descripcion, existencia, existencia_minima)
+        self.base_datos.modificar_producto(id_producto, nombre, precio, descripcion, existencia_minima)
         # volver a cargar el inventario
         self.limpieza_layout(self.main_layout_ventana_inventario)
         self.inventario()
@@ -434,7 +461,7 @@ class Ventana_inventario(Codigo):
         self.limpieza_layout(self.main_layout_editar_producto)
         self.boton_agregar.setEnabled(True)
         self.boton_cancelar_venta.setEnabled(True)
-        self.mensaje_informacion("Correcciones canceladas", "El cambio se ha cancelado correctamente")
+        self.mensaje_informacion("Correcciones canceladas", "El producto no ha sido modificado")
 
     def confirmar_insercion(self):
         # Lógica para ingresar productos a la base de datos
@@ -443,13 +470,13 @@ class Ventana_inventario(Codigo):
         self.boton_agregar.setEnabled(True)
 
         nombre = self.ingreso_nombre_producto.text()
-        existencia = int(self.ingreso_existencia_producto.text())
+        # existencia = int(self.ingreso_existencia_producto.text())
         precio = float(self.ingreso_precio_producto.text())
         descripcion = self.ingreso_descripcion_producto.text()
         existencia_minima = int(self.ingreso_existencia_minima_producto.text())
 
         # Aquí se debe de agregar el producto a la base de datos
-        self.base_datos.agregar_producto(nombre, precio, existencia, descripcion, existencia_minima)
+        self.base_datos.agregar_producto(nombre, precio, descripcion, existencia_minima)
         
         # Volver a cargar el inventario
         self.limpieza_layout(self.main_layout_ventana_inventario)
@@ -461,5 +488,5 @@ class Ventana_inventario(Codigo):
         self.limpieza_layout(self.main_layout_editar_producto)
         self.boton_agregar.setEnabled(True)
         self.boton_cancelar_venta.setEnabled(True)
-        self.mensaje_informacion("Inserción cancelada", "La inserción se canceló correctamente")
+        self.mensaje_informacion("Inserción cancelada", "El producto no se ha insertado")
 

@@ -1,12 +1,11 @@
 import sys
-from PyQt6.QtWidgets import QApplication ,QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem, QHeaderView 
-from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor, QBrush, QPalette
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QApplication ,QWidget, QPushButton, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QComboBox 
+from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor, QBrush, QPalette, QShortcut, QKeySequence
+from PyQt6.QtCore import Qt
 
 class Codigo:
     def __init__(self):    
         self.app = QApplication(sys.argv)
-        self.ventanas: list[QWidget] |  None = [None, None]
 
 # Funciones para optimizar el codigo
     def fondo_degradado(self, window: QWidget, color1, color2):
@@ -40,7 +39,7 @@ class Codigo:
     def mensaje_error(self, titulo, mensaje):
         mesaje_error = QMessageBox()
         mesaje_error.setIcon(QMessageBox.Icon.Warning)
-        mesaje_error.setStyleSheet("QMessageBox { color: black; background-color: #e15f5f;} QPushButton {color: black; background-color: #ff0000;} QLabel{color: black;}")
+        mesaje_error.setStyleSheet("QMessageBox { color: black; background-color: #FF0024;} QPushButton {color: black; background-color: #FF4866; border: 2px solid black; min-width: 50px; min-height: 20px; border-radius: 5px;} QPushButton:hover {background-color: #FF3D7E;} QPushButton:pressed {background-color: #FF0000;} QLabel{color: black;}")
         mesaje_error.setWindowIcon(QIcon("imagenes/warning.ico")) 
         mesaje_error.setWindowTitle(titulo)
         mesaje_error.setText(mensaje)
@@ -49,7 +48,7 @@ class Codigo:
 
     def mensaje_informacion(self, titulo, mensaje):
         mensaje_informacion = QMessageBox()
-        mensaje_informacion.setStyleSheet("QMessageBox { color: black; background-color: #36dfea;} QPushButton {color: black; background-color: #22a4ac;} QLabel{color: black;}")
+        mensaje_informacion.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px; border-radius: 5px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
         mensaje_informacion.setWindowIcon(QIcon("imagenes/infomation.ico"))
         mensaje_informacion.setWindowTitle(titulo)
         mensaje_informacion.setText(mensaje)
@@ -58,11 +57,13 @@ class Codigo:
         mensaje_informacion.exec()
 
     def color_boton_sin_oprimir(self, boton: QPushButton):
-        boton.setStyleSheet("QPushButton {background-color: white; border: 3px solid black; color: black} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;}")
+        boton.setStyleSheet("QPushButton {background-color: white; border: 3px solid black; color: black; border-radius: 5px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;}")
 
     def color_boton_oprimido(self, boton: QPushButton):
-        boton.setStyleSheet("QPushButton {background-color: #00CAE0; border: 3px solid black;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;}")
+        boton.setStyleSheet("QPushButton {background-color: #00CAE0; border: 3px solid black; border-radius: 5px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;}")
 
+    def color_boton__bloqueado(self, boton: QPushButton):
+        boton.setStyleSheet("QPushButton {background-color: #78ADEB; border: 3px solid black; border-radius: 5px;} QPushButton:hover {background-color: #788AEA;} QPushButton:pressed {background-color: #B178EB;}")
     def imagen(self, ruta, ancho, alto):
         imagen = QPixmap(ruta)
         imagen = imagen.scaled(ancho, alto, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -73,12 +74,14 @@ class Codigo:
         botones[1].setEnabled(True)
         botones[2].setEnabled(True)
         botones[3].setEnabled(True)
+        botones[4].setEnabled(True)
 
     def recoloreas_botones(self, botones: list[QPushButton]):
         self.color_boton_sin_oprimir(botones[0])
         self.color_boton_sin_oprimir(botones[1])
         self.color_boton_sin_oprimir(botones[2])
         self.color_boton_sin_oprimir(botones[3])
+        self.color_boton_sin_oprimir(botones[4])
 
     def color_tabla(self, tabla):
         tabla.setStyleSheet("QTableWidget {background-color: white; border: 5px solid black;} QTableWidget::item {background-color: 00f4ff; color: black;} QTableWidget::item:selected {background-color: #1fdde5; color: black;} QTableWidget::item:hover {background-color: #4cd9df; color: black;} QHeaderView::section {background-color: #94fbff; color: black;}")
@@ -93,4 +96,19 @@ class Codigo:
         return QSpacerItem(x, y, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
     
     def color_linea(self, linea: QLineEdit):
-        linea.setStyleSheet("Color: black; background-color: white; border: 3px solid black;")
+        linea.setStyleSheet("Color: black; background-color: white; border: 3px solid black; border-radius: 5px")
+    
+    def asignacion_tecla(self, ventana, tecla, boton: QPushButton):
+        asignacion = QShortcut(QKeySequence(tecla), ventana)
+        asignacion.activated.connect(boton.click)
+
+    def aviso_acceso(self):
+        self.mensaje_informacion("Aviso de acceso", "Usted no tiene los permisos necesarios para esta opcion")
+
+    def color_acceso_nivel(self, nivel: str, botones: list[QPushButton]):
+        if self.nivel != "Vendedor":
+            self.recoloreas_botones(self.botones)
+
+    def color_caja_opciones(self, caja: QComboBox):
+        caja.setStyleSheet("""QComboBox {background-color: white; color: Black; border: 3px solid black; border-radius: 5px; padding: 1px 18px 1px 3px;} QComboBox:hover {border: 3px solid #555;} QComboBox:on { border: 3px solid #555; border-bottom-left-radius: 0px; border-bottom-right-radius: 0px;} QComboBox::drop-down {subcontrol-origin: padding; subcontrol-position: top right; width: 20px; border-left-width: 1px; border-left-color: darkgray; border-left-style: solid; border-top-right-radius: 3px; border-bottom-right-radius: 3px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f0f0f0, stop: 1 #d9d9d9);} QComboBox::down-arrow:on {top: 1px; left: 1px;} QComboBox QAbstractItemView {border: 3px solid black; selection-background-color: white; selection-color: blue; background-color: white; color: Black;} QComboBox QAbstractItemView::item {padding: 5px; min-height: 20px;} QComboBox QAbstractItemView::item:selected {background-color: #e0e0e0; color: black;}""")
+    
