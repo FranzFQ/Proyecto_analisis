@@ -23,13 +23,13 @@ class Ventana_usuarios(Codigo):
         
         main_layout = QHBoxLayout()
 
-        sub_layout = QVBoxLayout()
+        layout1 = QVBoxLayout()
 
-        layout3 = QHBoxLayout()
-        layout3.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout2 = QHBoxLayout()
+        layout2.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         
-        self.layout4 = QHBoxLayout()
-        self.layout4.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.layout3 = QHBoxLayout()
+        self.layout3.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.boton_editar = QPushButton()
         self.boton_editar.setIcon(QIcon(self.imagen("imagenes/editar.png", 50, 50)))
@@ -108,19 +108,19 @@ class Ventana_usuarios(Codigo):
         self.tabla_usuarios.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tabla_usuarios.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        layout3.addWidget(self.boton_editar)
-        layout3.addWidget(self.boton_eliminar)
-        layout3.addWidget(self.boton_agregar)
-        layout3.addWidget(self.boton_busqueda)
-        layout3.addWidget(self.ingreso_busqueda)
+        layout2.addWidget(self.boton_editar)
+        layout2.addWidget(self.boton_eliminar)
+        layout2.addWidget(self.boton_agregar)
+        layout2.addWidget(self.boton_busqueda)
+        layout2.addWidget(self.ingreso_busqueda)
 
-        self.layout4.addWidget(self.tabla_usuarios)
+        self.layout3.addWidget(self.tabla_usuarios)
         
-        sub_layout.addLayout(layout3)
-        sub_layout.addLayout(self.layout4)
+        layout1.addLayout(layout2)
+        layout1.addLayout(self.layout3)
 
         main_layout.addItem(self.espacio(35, 35))
-        main_layout.addLayout(sub_layout)
+        main_layout.addLayout(layout1)
         self.layout.addLayout(main_layout)
 
     def agregar_usuario(self):
@@ -131,13 +131,11 @@ class Ventana_usuarios(Codigo):
         self.layout_extra = QVBoxLayout()
         self.layout_extra.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        layout1 = QGridLayout()
-        layout2 = QHBoxLayout()
-        layout2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout1 = QVBoxLayout()
+        layout1.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.boton_agregar.setEnabled(False)
-        self.boton_eliminar.setEnabled(True)
-        self.boton_editar.setEnabled(True)
+        layout2 = QGridLayout()
+        layout2.setSpacing(30)
 
         imagen_agregar = self.imagen("imagenes/agregar.png", 90, 90)
         agregar_label = QLabel()
@@ -148,86 +146,91 @@ class Ventana_usuarios(Codigo):
 
         self.ingreso_nombre = QLineEdit()
         self.color_linea(self.ingreso_nombre)
-        self.ingreso_nombre.setFixedSize(200, 30)
+        self.ingreso_nombre.setFixedWidth(200)
         self.ingreso_nombre.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_email = QLineEdit()
         self.color_linea(self.ingreso_email)
-        self.ingreso_email.setFixedSize(200, 30)
+        self.ingreso_email.setFixedWidth(200)
         self.ingreso_email.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_telefono = QLineEdit()
         self.color_linea(self.ingreso_telefono)
-        self.ingreso_telefono.setFixedSize(200, 30)
+        self.ingreso_telefono.setFixedWidth(200)
         self.ingreso_telefono.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_puesto = QLineEdit()
         self.color_linea(self.ingreso_puesto)
-        self.ingreso_puesto.setFixedSize(200, 30)
+        self.ingreso_puesto.setFixedWidth(200)
         self.ingreso_puesto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         
         self.ingreso_contrasennia = QLineEdit()
         self.color_linea(self.ingreso_contrasennia)
-        self.ingreso_contrasennia.setFixedSize(200, 30)
+        self.ingreso_contrasennia.setFixedWidth(200)
         self.ingreso_contrasennia.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-
         label_nombre = QLabel("Ingrese el usuario: ")
-        label_nombre.setStyleSheet("color: Black")
+        label_nombre.setStyleSheet("color: Black; font-size: 12px")
         label_nombre.setFixedWidth(200)
         label_nombre.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_nombre.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_email = QLabel("Ingrese el email: ")
-        label_email.setStyleSheet("color: Black")
+        label_email.setStyleSheet("color: Black; font-size: 12px")
         label_email.setFixedWidth(200)
         label_email.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_email.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_telfono = QLabel("Ingrese el telefono: ")
-        label_telfono.setStyleSheet("color: Black")
+        label_telfono.setStyleSheet("color: Black; font-size: 12px")
         label_telfono.setFixedWidth(200)
         label_telfono.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_telfono.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_puesto = QLabel("Puesto(0 = Admin, 1 = Vend): ")
-        label_puesto.setStyleSheet("color: Black")
+        label_puesto.setStyleSheet("color: Black; font-size: 12px")
         label_puesto.setFixedWidth(200)
         label_puesto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_puesto.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        label_contrasennia = QLabel("Ingrese la contrasennia: ")
-        label_contrasennia.setStyleSheet("color: Black")
+        label_contrasennia = QLabel("Ingrese la contraseña: ")
+        label_contrasennia.setStyleSheet("color: Black; font-size: 12px")
         label_contrasennia.setFixedWidth(200)
         label_contrasennia.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-
+        label_contrasennia.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         boton_confirmar = QPushButton("Agregar")
         self.color_boton_sin_oprimir(boton_confirmar)
-        boton_confirmar.setFixedWidth(150)
+        boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.agregar_usuario_base)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
-        boton_cancelar.setFixedWidth(150)
+        boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar)
-        layout2.addWidget(agregar_label)
 
-        layout1.addWidget(label_nombre, 0, 0)
-        layout1.addWidget(self.ingreso_nombre, 0, 1)
-        layout1.addWidget(label_telfono, 1, 0)
-        layout1.addWidget(self.ingreso_telefono, 1, 1)
-        layout1.addWidget(label_email, 2, 0)
-        layout1.addWidget(self.ingreso_email, 2, 1)
-        layout1.addWidget(label_puesto, 3, 0)
-        layout1.addWidget(self.ingreso_puesto, 3, 1)
-        layout1.addWidget(label_contrasennia, 4, 0)
-        layout1.addWidget(self.ingreso_contrasennia, 4, 1)
-        layout1.addWidget(boton_confirmar, 5, 0)
-        layout1.addWidget(boton_cancelar, 5, 1)
+        layout1.addWidget(agregar_label)
+        layout1.addItem(self.espacio(50, 50))
+
+        layout2.addWidget(label_nombre, 0, 0)
+        layout2.addWidget(self.ingreso_nombre, 0, 1)
+        layout2.addWidget(label_telfono, 1, 0)
+        layout2.addWidget(self.ingreso_telefono, 1, 1)
+        layout2.addWidget(label_email, 2, 0)
+        layout2.addWidget(self.ingreso_email, 2, 1)
+        layout2.addWidget(label_puesto, 3, 0)
+        layout2.addWidget(self.ingreso_puesto, 3, 1)
+        layout2.addWidget(label_contrasennia, 4, 0)
+        layout2.addWidget(self.ingreso_contrasennia, 4, 1)
+        layout2.addWidget(boton_confirmar, 5, 0)
+        layout2.addWidget(boton_cancelar, 5, 1)
         
-        self.layout_extra.addLayout(layout2)
         self.layout_extra.addLayout(layout1)
+        self.layout_extra.addLayout(layout2)
 
-        self.layout4.addLayout(self.layout_extra)
+        self.layout3.addLayout(self.layout_extra)
 
 
     def editar_usuario(self):
@@ -237,17 +240,14 @@ class Ventana_usuarios(Codigo):
 
         self.tabla_usuarios.cellClicked.connect(self.llenar_campos)
 
-
         self.layout_extra = QVBoxLayout()
         self.layout_extra.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        layout1 = QGridLayout()
-        layout2 = QHBoxLayout()
-        layout2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout1 = QVBoxLayout()
+        layout1.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.boton_agregar.setEnabled(False)
-        self.boton_eliminar.setEnabled(True)
-        self.boton_editar.setEnabled(True)
+        layout2 = QGridLayout()
+        layout2.setSpacing(30)
 
         imagen_agregar = self.imagen("imagenes/editar.png", 90, 90)
         agregar_label = QLabel()
@@ -258,87 +258,91 @@ class Ventana_usuarios(Codigo):
 
         self.ingreso_nombre = QLineEdit()
         self.color_linea(self.ingreso_nombre)
-        self.ingreso_nombre.setFixedSize(200, 30)
+        self.ingreso_nombre.setFixedWidth(200)
         self.ingreso_nombre.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_email = QLineEdit()
         self.color_linea(self.ingreso_email)
-        self.ingreso_email.setFixedSize(200, 30)
+        self.ingreso_email.setFixedWidth(200)
         self.ingreso_email.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_telefono = QLineEdit()
         self.color_linea(self.ingreso_telefono)
-        self.ingreso_telefono.setFixedSize(200, 30)
+        self.ingreso_telefono.setFixedWidth(200)
         self.ingreso_telefono.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.ingreso_puesto = QLineEdit()
         self.color_linea(self.ingreso_puesto)
-        self.ingreso_puesto.setFixedSize(200, 30)
+        self.ingreso_puesto.setFixedWidth(200)
         self.ingreso_puesto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         
         self.ingreso_contrasennia = QLineEdit() #ingreso_nombre, ingreso_email, ingreso_telefono, ingreso_puesto, ingreso_contrasennia
         self.color_linea(self.ingreso_contrasennia)
-        self.ingreso_contrasennia.setFixedSize(200, 30)
+        self.ingreso_contrasennia.setFixedWidth(200)
         self.ingreso_contrasennia.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-
         label_nombre = QLabel("Ingrese el usuario: ")
-        label_nombre.setStyleSheet("color: Black")
         label_nombre.setFixedWidth(200)
         label_nombre.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_nombre.setStyleSheet("color: Black; font-size: 12px")
+        label_nombre.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_email = QLabel("Ingrese el email: ")
-        label_email.setStyleSheet("color: Black")
         label_email.setFixedWidth(200)
         label_email.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_email.setStyleSheet("color: Black; font-size: 12px")
+        label_email.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_telfono = QLabel("Ingrese el telefono: ")
-        label_telfono.setStyleSheet("color: Black")
         label_telfono.setFixedWidth(200)
         label_telfono.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_telfono.setStyleSheet("color: Black; font-size: 12px")
+        label_telfono.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         label_puesto = QLabel("Puesto(0 = Admin, 1 = Vend): ")
-        label_puesto.setStyleSheet("color: Black")
         label_puesto.setFixedWidth(200)
         label_puesto.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        label_puesto.setStyleSheet("color: Black; font-size: 12px")
+        label_puesto.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        label_contrasennia = QLabel("Ingrese la contrasennia: ")
-        label_contrasennia.setStyleSheet("color: Black")
+        label_contrasennia = QLabel("Ingrese la contraseña: ")
         label_contrasennia.setFixedWidth(200)
         label_contrasennia.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-
+        label_contrasennia.setStyleSheet("color: Black; font-size: 12px")
+        label_contrasennia.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         boton_confirmar = QPushButton("Modificar")
         self.color_boton_sin_oprimir(boton_confirmar)
-        boton_confirmar.setFixedWidth(150)
+        boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.modificar_usuario_base)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
-        boton_cancelar.setFixedWidth(150)
+        boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar)
 
-        layout2.addWidget(agregar_label)
+        layout1.addWidget(agregar_label)
+        layout1.addItem(self.espacio(50, 50))
 
-        layout1.addWidget(label_nombre, 0, 0)
-        layout1.addWidget(self.ingreso_nombre, 0, 1)
-        layout1.addWidget(label_telfono, 1, 0)
-        layout1.addWidget(self.ingreso_telefono, 1, 1)
-        layout1.addWidget(label_email, 2, 0)
-        layout1.addWidget(self.ingreso_email, 2, 1)
-        layout1.addWidget(label_puesto, 3, 0)
-        layout1.addWidget(self.ingreso_puesto, 3, 1)
-        layout1.addWidget(label_contrasennia, 4, 0)
-        layout1.addWidget(self.ingreso_contrasennia, 4, 1)
-        layout1.addWidget(boton_confirmar, 5, 0)
-        layout1.addWidget(boton_cancelar, 5, 1)
+        layout2.addWidget(label_nombre, 0, 0)
+        layout2.addWidget(self.ingreso_nombre, 0, 1)
+        layout2.addWidget(label_telfono, 1, 0)
+        layout2.addWidget(self.ingreso_telefono, 1, 1)
+        layout2.addWidget(label_email, 2, 0)
+        layout2.addWidget(self.ingreso_email, 2, 1)
+        layout2.addWidget(label_puesto, 3, 0)
+        layout2.addWidget(self.ingreso_puesto, 3, 1)
+        layout2.addWidget(label_contrasennia, 4, 0)
+        layout2.addWidget(self.ingreso_contrasennia, 4, 1)
+        layout2.addWidget(boton_confirmar, 5, 0)
+        layout2.addWidget(boton_cancelar, 5, 1)
         
-        self.layout_extra.addLayout(layout2)
         self.layout_extra.addLayout(layout1)
+        self.layout_extra.addLayout(layout2)
 
-        self.layout4.addLayout(self.layout_extra)
+        self.layout3.addLayout(self.layout_extra)
 
     def llenar_campos(self, row): #ingreso_nombre, ingreso_email, ingreso_puesto, ingreso_telefono, (agregar contraseña)
         self.nombre = self.tabla_usuarios.item(row, 1).text()

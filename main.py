@@ -7,4 +7,4 @@ def main():
     ventana.inicio()
     sys.exit(app.exec())
     
-main()   
+main()

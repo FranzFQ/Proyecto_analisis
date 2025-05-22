@@ -5,7 +5,7 @@ from ventana_ventas import Ventana_ventas
 from ventana_compras import Ventana_compras
 from ventana_inventario import Ventana_inventario
 from ventana_reporte import Ventana_reporte
-from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QSizePolicy, QSpacerItem
+from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QSizePolicy
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QSize
 
@@ -162,6 +162,15 @@ class Ventana_principal(Codigo):
         aviso.addButton("No", QMessageBox.ButtonRole.NoRole)
         respuesta = aviso.exec()
         if respuesta == 2:
+            if self.rep.nueva_ventana is not None:
+                self.rep.nueva_ventana.close()
+
+            if self.ven.nueva_ventana is not None:
+                self.ven.nueva_ventana.close()
+
+            if self.com.nueva_ventana is not None:
+                self.com.nueva_ventana.close()
+
             self.window2.close()
             self.window1.inicio()
         
