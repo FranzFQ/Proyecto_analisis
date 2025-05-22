@@ -5,7 +5,7 @@ from PyQt6.QtCore import Qt, QSize
 from datetime import datetime
 
 class Ventana_compras(Codigo):
-    def __init__(self, main_layout, botones, base_datos, id_usuario, nivel):
+    def __init__(self, main_layout, botones, base_datos, id_usuario, nivel, ventana_principal):
         super().__init__()
         self.layout = main_layout
         self.botones = botones
@@ -17,7 +17,7 @@ class Ventana_compras(Codigo):
         self.layout_extra: QVBoxLayout | None = None
         self.nivel = nivel
         self.nueva_ventana = None
-        
+        self.ventana_principal = ventana_principal
 
     def compras(self):
         self.limpieza_layout(self.layout)

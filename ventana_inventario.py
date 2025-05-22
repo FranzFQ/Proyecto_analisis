@@ -4,13 +4,14 @@ from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor
 from PyQt6.QtCore import Qt, QSize
 
 class Ventana_inventario(Codigo):
-    def __init__(self, main_layout, botones, base_datos, nivel):
+    def __init__(self, main_layout, botones, base_datos, nivel, ventana_principal):
         super().__init__()
         self.layout = main_layout
         self.botones = botones
         self.base_datos = base_datos
         self.nivel = nivel
         self.layout_extra: QVBoxLayout | None = None
+        self.ventana_principal = ventana_principal
 
     def inventario(self):
         self.limpieza_layout(self.layout)
@@ -53,8 +54,8 @@ class Ventana_inventario(Codigo):
         self.boton_busqueda.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.color_boton_sin_oprimir(self.boton_busqueda)
         self.boton_busqueda.clicked.connect(self.buscar_producto)
+        self.asignacion_tecla(self.ventana_principal, "Ctrl+S", self.boton_busqueda)
         
-
         self.ingreso_busqueda = QLineEdit()
         self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")
         self.color_linea(self.ingreso_busqueda)
@@ -232,12 +233,14 @@ class Ventana_inventario(Codigo):
         boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.confirmar_insercion)
+        self.asignacion_tecla(self.ventana_principal, "Return", boton_confirmar)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar_insercion)
+        self.asignacion_tecla(self.ventana_principal, "Esc", boton_cancelar)
 
         layout1.addWidget(imagen)
         layout1.addItem(self.espacio(50, 50))
@@ -377,12 +380,14 @@ class Ventana_inventario(Codigo):
         boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.confirmar_edicion)
+        self.asignacion_tecla(self.ventana_principal, "Return", boton_confirmar)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar_edicion)
+        self.asignacion_tecla(self.ventana_principal, "Esc", boton_cancelar)
 
         layout1.addWidget(imagen)
         layout1.addItem(self.espacio(50, 50))
@@ -410,7 +415,7 @@ class Ventana_inventario(Codigo):
 
     def confirmar_eliminacion(self, fila):
         aviso = QMessageBox()
-        aviso.setStyleSheet("QMessageBox { color: black; background-color: #36dfea;} QPushButton {color: black; background-color: #22a4ac;} QLabel{color: black;}")
+        aviso.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
         aviso.setWindowIcon(QIcon("imagenes/infomation.ico"))
         aviso.setWindowTitle("¿Eliminar producto?") 
         aviso.setText("¿Seguro que desea eliminar el producto seleccionado?")
@@ -424,9 +429,6 @@ class Ventana_inventario(Codigo):
             self.tabla.removeRow(fila)
             self.limpieza_layout(self.main_layout)
             self.inventario()
-            self.mensaje_informacion("Producto eliminado", "El producto ha sido eliminado correctamente")
-        elif respuesta == 3:
-            self.mensaje_informacion("Eliminación cancelada", "El producto no ha sido eliminado")
 
     def confirmar_edicion(self):
         self.layout_extra = None
@@ -444,15 +446,12 @@ class Ventana_inventario(Codigo):
         # volver a cargar el inventario
         self.limpieza_layout(self.main_layout)
         self.inventario()
-
-        self.mensaje_informacion("Correcciones guardadas", "Los cambios se han guardado correctamente")
     
     def cancelar_edicion(self):
         self.layout_extra = None
         self.limpieza_layout(self.main_layout1)
         self.boton_agregar.setEnabled(True)
         self.boton_editar.setEnabled(True)
-        self.mensaje_informacion("Correcciones canceladas", "El producto no ha sido modificado")
 
     def confirmar_insercion(self):
         self.layout_extra = None
@@ -486,13 +485,10 @@ class Ventana_inventario(Codigo):
         # Volver a cargar el inventario
         self.limpieza_layout(self.main_layout)
         self.inventario()
-
-        self.mensaje_informacion("Inserción realizada", "El producto se ha insertado correctamente")
         
     def cancelar_insercion(self):
         self.layout_extra = None
         self.limpieza_layout(self.main_layout1)
         self.boton_agregar.setEnabled(True)
         self.boton_editar.setEnabled(True)
-        self.mensaje_informacion("Inserción cancelada", "El producto no se ha insertado")
 

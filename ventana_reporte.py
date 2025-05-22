@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 class Ventana_reporte(Codigo):
-    def __init__(self, main_layout, base_datos, botones, nivel):
+    def __init__(self, main_layout, base_datos, botones, nivel, ventana_principal):
         super().__init__()
         self.layout = main_layout
         self.base_datos = base_datos
@@ -18,6 +18,7 @@ class Ventana_reporte(Codigo):
         self.nivel = nivel
         self.nueva_ventana = None
         self.verificacion = None
+        self.ventana_principal = ventana_principal
     
     def reportes(self):
         self.limpieza_layout(self.layout)

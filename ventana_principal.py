@@ -107,11 +107,11 @@ class Ventana_principal(Codigo):
         else:
             pass
         
-        self.usu = Ventana_usuarios(self.layout2, self.botones, self.base_datos, nivel)
-        self.ven = Ventana_ventas(self.layout2, self.botones, self.base_datos, self.id_usuario, nivel)
-        self.com = Ventana_compras(self.layout2, self.botones, self.base_datos, self.id_usuario, nivel)
-        self.inv = Ventana_inventario(self.layout2, self.botones, self.base_datos, nivel)
-        self.rep = Ventana_reporte(self.layout2, self.base_datos, self.botones, nivel)
+        self.usu = Ventana_usuarios(self.layout2, self.botones, self.base_datos, nivel, self.window2)
+        self.ven = Ventana_ventas(self.layout2, self.botones, self.base_datos, self.id_usuario, nivel, self.window2)
+        self.com = Ventana_compras(self.layout2, self.botones, self.base_datos, self.id_usuario, nivel, self.window2)
+        self.inv = Ventana_inventario(self.layout2, self.botones, self.base_datos, nivel, self.window2)
+        self.rep = Ventana_reporte(self.layout2, self.base_datos, self.botones, nivel, self.window2)
 
         sub_layout2.addStretch()
         sub_layout2.addWidget(self.logo)

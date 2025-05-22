@@ -6,13 +6,14 @@ import bcrypt
 
 
 class Ventana_usuarios(Codigo):
-    def __init__(self, main_layout, botones, base_datos, nivel):
+    def __init__(self, main_layout, botones, base_datos, nivel, ventana_principal):
         super().__init__()
         self.layout = main_layout
         self.botones = botones
         self.base_datos = base_datos
         self.layout_extra: QVBoxLayout | None = None
         self.nivel = nivel
+        self.ventana_principal = ventana_principal
 
     def usuario(self):
         self.limpieza_layout(self.layout)
@@ -371,16 +372,24 @@ class Ventana_usuarios(Codigo):
         id_usuario = self.tabla_usuarios.item(fila_seleccionada, 0).text()
 
         # Confirmar la eliminación
-        respuesta = QMessageBox.question(self.layout_extra, "Confirmar eliminación", "¿Está seguro de que desea eliminar este usuario?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if respuesta == QMessageBox.StandardButton.Yes:
+        aviso = QMessageBox()
+        aviso.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
+        aviso.setWindowIcon(QIcon("imagenes/infomation.ico"))
+        aviso.setWindowTitle("¿Eliminar producto?") 
+        aviso.setText("¿Seguro que desea eliminar el producto seleccionado?")
+        aviso.setIcon(QMessageBox.Icon.Information)
+        aviso.addButton("Si", QMessageBox.ButtonRole.YesRole)
+        aviso.addButton("No", QMessageBox.ButtonRole.NoRole)
+        respuesta = aviso.exec()
+        if respuesta == 2:
             try:
                 # Llamar al método de la base de datos para eliminar el usuario
                 self.base_datos.eliminar_usuario(int(id_usuario))
-                self.mensaje_informacion("Éxito", "Usuario eliminado correctamente")
                 self.limpieza_layout(self.layout_extra)
                 self.usuario()
             except Exception as e:
                 self.mensaje_error("Error", f"Error al eliminar el usuario: {e}")
+
 
     def agregar_usuario_base(self):
         # (nombre, email, tipo, contrasennia, telefono)
@@ -417,7 +426,6 @@ class Ventana_usuarios(Codigo):
 
             print(f"Datos del usuario: {nombre}, {email}, {tipo}, {contrasennia}, {telefono}")
             self.base_datos.agregar_usuario(nombre, email, tipo, hash_bcrypt, telefono)
-            self.mensaje_informacion("Exito", "Usuario agregado correctamente")
             self.limpieza_layout(self.layout_extra)
             self.usuario()
         except Exception as e:
@@ -496,7 +504,6 @@ class Ventana_usuarios(Codigo):
 
 
             self.base_datos.modificar_usuario(id, nombre, email, tipo, hash_bcrypt, telefono) 
-            self.mensaje_informacion("Exito", "Usuario modificado correctamente")
             self.limpieza_layout(self.layout_extra)
             self.usuario()
         except Exception as e:
@@ -506,7 +513,6 @@ class Ventana_usuarios(Codigo):
     def cancelar(self):
         self.limpieza_layout(self.layout_extra)
         self.usuario()
-        self.mensaje_informacion("Proceso cancelado", "El proceso se canceló correctamente")
 
 
 

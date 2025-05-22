@@ -7,7 +7,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
 class Ventana_ventas(Codigo):
-    def __init__(self, main_layout: QVBoxLayout, botones, base_datos, id_usuario, nivel):
+    def __init__(self, main_layout: QVBoxLayout, botones, base_datos, id_usuario, nivel, ventana_principal):
         super().__init__()
         self.layout = main_layout
         self.botones = botones
@@ -18,6 +18,7 @@ class Ventana_ventas(Codigo):
         self.total_venta = 0
         self.id_usuario = id_usuario
         self.nueva_ventana = None
+        self.ventana_principal = ventana_principal
 
     def ventas(self):
         self.limpieza_layout(self.layout)
