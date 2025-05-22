@@ -158,7 +158,7 @@ class Ventana_reporte(Codigo):
         self.detalle_venta = QTableWidget(len(detalle_vendidos), 4)
         self.detalle_venta.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
-        self.detalle_venta.setHorizontalHeaderLabels(["IdOrden", "Producto", "Cantidad", "Total"])
+        self.detalle_venta.setHorizontalHeaderLabels(["IdOrden", "Producto", "Cantidad", "Precio"])
 
         for fila, producto in enumerate(detalle_vendidos):
 
@@ -192,19 +192,81 @@ class Ventana_reporte(Codigo):
         self.verificacion = None
         self.orden_tabla.setCurrentIndex(3)  
 
+    def mostrar_detalles_venta_dia(self, fila):
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
+
+        layout1 = QVBoxLayout()
+        self.verificacion = layout1
+
+        cartelera = QLabel("Detalles de la venta")
+        self.color_linea(cartelera)
+        cartelera.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        cartelera.setFixedHeight(50)
+        cartelera.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cartelera.setEnabled(False)
+
+        boton_cerrar = QPushButton("cerrar")
+        self.color_boton_sin_oprimir(boton_cerrar)
+        boton_cerrar.setFixedHeight(50)
+        boton_cerrar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        boton_cerrar.clicked.connect(self.limpieza_detalle_venta)
+
+        fecha = self.tabla.item(fila, 0).text()
+        # Devolver IdVenta, Producto, Cantidad, Precio
+        detalle_vendidos = self.base_datos.obtener_ventas_dia(fecha) 
+            
+
+        self.detalle_venta = QTableWidget(len(detalle_vendidos), 4)
+        self.detalle_venta.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+
+        self.detalle_venta.setHorizontalHeaderLabels(["IdVenta", "Producto", "Cantidad", "Precio"])
+
+        for fila, producto in enumerate(detalle_vendidos):
+
+            id_item = QTableWidgetItem(f"{producto['IdVenta']}")
+            producto_item = QTableWidgetItem(producto['Producto'])
+            cantidad_item = QTableWidgetItem(f"{producto['Cantidad']}")
+            total_item = QTableWidgetItem(f"Q{producto['Precio']:.2f}") 
+            
+            self.detalle_venta.setItem(fila, 0, id_item)
+            self.detalle_venta.setItem(fila, 1, producto_item)
+            self.detalle_venta.setItem(fila, 2, cantidad_item)
+            self.detalle_venta.setItem(fila, 3, total_item)
+
+            for col in range(4):
+                item = self.detalle_venta.item(fila, col)
+                item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+
+        self.color_tabla(self.detalle_venta)
+        self.detalle_venta.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.detalle_venta.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        layout1.addWidget(cartelera)
+        layout1.addWidget(self.detalle_venta)
+        layout1.addWidget(boton_cerrar)
+
+        self.layout2.addLayout(layout1)
 
     # Función que manejará los cambios
     def actualizar_vista(self):
         texto = self.orden_tabla.currentText()  # Obtiene el texto seleccionado
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
+
         if texto == "Día":
+            # self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
             reporte = self.base_datos.obtener_reporte_ventas_por_dia()
         elif texto == "Mes":
             reporte = self.base_datos.obtener_reporte_ventas_por_mes()
         elif texto == "Año":
             reporte = self.base_datos.obtener_reporte_ventas_por_anio()
         elif texto == "Todas":
-            # Hacer que al dar doble click en la tabla se abra la ventana de detalles
             reporte = self.base_datos.obtener_reporte_ventas()
+
+            self.tabla.setHorizontalHeaderLabels(["IdVenta", "Empleado", "Fecha", "Total"])
+            self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            self.tabla.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
             self.generar_tabla_todas_ventas(reporte)
             return
@@ -219,6 +281,7 @@ class Ventana_reporte(Codigo):
         self.tabla.clearContents()
         self.tabla.setRowCount(len(reporte))
         self.tabla.setColumnCount(4)
+        self.tabla.setHorizontalHeaderLabels(["Fecha", "Ingresos", "Total de Productos vendidos", "Ganancias"])
         # Verificar si es orden de compra o venta
         for fila, registro in enumerate(reporte):
 
@@ -243,6 +306,9 @@ class Ventana_reporte(Codigo):
         self.color_tabla(self.tabla)
         self.tabla.setRowCount(len(reporte))
         self.tabla.setColumnCount(4)
+        self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
+
+
         # Verificar si es orden de compra o venta
         for fila, registro in enumerate(reporte):
 
@@ -319,6 +385,10 @@ class Ventana_reporte(Codigo):
     
     def actualizar_vista_compras(self):
         texto = self.orden_tabla_compras.currentText()  # Obtiene el texto seleccionado
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
+
+
         if texto == "Día":
             reporte = self.base_datos.obtener_reporte_compras_por_dia()
         elif texto == "Mes":
@@ -333,28 +403,6 @@ class Ventana_reporte(Codigo):
             return
         self.tabla.clearContents()
         self.generar_tabla_compras(reporte)
-
-    # Función que manejará los cambios
-    def actualizar_vista(self):
-        texto = self.orden_tabla.currentText()  # Obtiene el texto seleccionado
-        if texto == "Día":
-            reporte = self.base_datos.obtener_reporte_ventas_por_dia()
-        elif texto == "Mes":
-            reporte = self.base_datos.obtener_reporte_ventas_por_mes()
-        elif texto == "Año":
-            reporte = self.base_datos.obtener_reporte_ventas_por_anio()
-        elif texto == "Todas":
-            # Hacer que al dar doble click en la tabla se abra la ventana de detalles
-            reporte = self.base_datos.obtener_reporte_ventas()
-            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
-            self.generar_tabla_todas_ventas(reporte)
-            return
-
-        # Limpiar la tabla antes de llenarla
-        self.tabla.clearContents()
-        self.generar_tabla(reporte)
-
-
 
     def generar_tabla_compras(self, reporte):
         # Limpiar la tabla antes de llenarla

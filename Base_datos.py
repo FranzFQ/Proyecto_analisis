@@ -277,6 +277,23 @@ class BaseDatos:
     # MÉTODOS DE REPORTES
     # =======================
 
+    def obtener_ventas_dia(self, fecha): # Devolver IdVenta, Producto, Cantidad, Precio
+        # Obtener los productos vendidos en un día
+        with self.conexion.cursor() as cursor:
+            cursor.execute("""SELECT 
+                                v.id AS IdVenta, 
+                                p.nombre AS Producto, 
+                                dv.cantidad AS Cantidad, 
+                                dv.precio AS Precio
+                            FROM 
+                                venta v
+                                INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
+                                INNER JOIN producto p ON p.id = dv.Producto_id
+                            WHERE 
+                                DATE(v.fecha) = %s""", (fecha,))
+            return cursor.fetchall()
+
+
     def obtener_reporte_ventas(self): # Devolver IdVenta, Empleado, Fecha, Total
         with self.conexion.cursor() as cursor:
             cursor.execute("""select 
@@ -298,7 +315,7 @@ class BaseDatos:
                                 dv.id AS IdOrden, 
                                 p.nombre AS Producto, 
                                 dv.cantidad AS CantidadVendida, 
-                                dv.cantidad * dv.precio AS Total
+                                dv.precio AS Total
                             FROM 
                                 venta v
                                 INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
@@ -336,9 +353,9 @@ class BaseDatos:
         with self.conexion.cursor() as cursor:
             cursor.execute("""SELECT 
                                 DATE(v.fecha) AS Fecha,
-                                SUM(v.total_venta) AS IngresoTotal,
+                                SUM(dv.cantidad * dv.precio) AS IngresoTotal,
                                 SUM(dv.cantidad) AS ProductosVendidos,
-                                SUM(v.total_venta) * 0.15 AS Ganancia
+                                SUM(dv.cantidad * dv.precio) * 0.15 AS Ganancia
                             FROM 
                                 venta v
                                 INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
@@ -354,9 +371,9 @@ class BaseDatos:
         with self.conexion.cursor() as cursor:
             cursor.execute("""SELECT 
                                 DATE_FORMAT(v.fecha, '%Y-%m') AS Fecha,
-                                SUM(v.total_venta) AS IngresoTotal,
+                                SUM(dv.cantidad * dv.precio) AS IngresoTotal,
                                 SUM(dv.cantidad) AS ProductosVendidos,
-                                SUM(v.total_venta) * 0.15 AS Ganancia
+                                SUM(dv.cantidad * dv.precio) * 0.15 AS Ganancia
                             FROM 
                                 venta v
                                 INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
@@ -372,9 +389,9 @@ class BaseDatos:
         with self.conexion.cursor() as cursor:
             cursor.execute("""SELECT 
                                 DATE_FORMAT(v.fecha, '%Y') AS Fecha,
-                                SUM(v.total_venta) AS IngresoTotal,
+                                SUM(dv.cantidad * dv.precio) AS IngresoTotal,
                                 SUM(dv.cantidad) AS ProductosVendidos,
-                                SUM(v.total_venta) * 0.15 AS Ganancia
+                                SUM(dv.cantidad * dv.precio) * 0.15 AS Ganancia
                             FROM 
                                 venta v
                                 INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
@@ -448,6 +465,8 @@ class BaseDatos:
                             FROM 
                                 compra c
                                 INNER JOIN detalle_compra dc ON c.id = dc.Compra_id
+                            WHERE
+                                c.estado = 1
                             GROUP BY 
                                 DATE(c.fecha)
                             ORDER BY 
@@ -464,6 +483,8 @@ class BaseDatos:
                             FROM 
                                 compra c
                                 INNER JOIN detalle_compra dc ON c.id = dc.Compra_id
+                            WHERE
+                                c.estado = 1
                             GROUP BY 
                                 DATE_FORMAT(c.fecha, '%Y-%m')
                             ORDER BY 
@@ -480,6 +501,8 @@ class BaseDatos:
                             FROM 
                                 compra c
                                 INNER JOIN detalle_compra dc ON c.id = dc.Compra_id
+                            WHERE
+                                c.estado = 1
                             GROUP BY 
                                 DATE_FORMAT(c.fecha, '%Y')
                             ORDER BY 
@@ -499,6 +522,7 @@ class BaseDatos:
                                 JOIN detalle_compra dc ON c.id = dc.Compra_id
                                 JOIN proveedor p ON c.Proveedor_id = p.id
                             WHERE 
+                                c.estado = 1 AND
                                 c.fecha BETWEEN %s AND %s
                             GROUP BY 
                                 c.id
