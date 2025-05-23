@@ -54,7 +54,7 @@ class Ventana_inventario(Codigo):
         self.boton_busqueda.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.color_boton_sin_oprimir(self.boton_busqueda)
         self.boton_busqueda.clicked.connect(self.buscar_producto)
-        self.asignacion_tecla(self.ventana_principal, "Ctrl+S", self.boton_busqueda)
+        self.asignacion_tecla(self.ventana_principal, "Enter", self.boton_busqueda)
         
         self.ingreso_busqueda = QLineEdit()
         self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")
@@ -97,7 +97,7 @@ class Ventana_inventario(Codigo):
 
             if producto['stock'] < producto['stock_minimo']:
                 self.tabla.setItem(fila, 3, QTableWidgetItem(str(producto['stock'])))
-                self.tabla.item(fila, 3).setBackground(QBrush(QColor(235, 111, 84)))
+                self.tabla.item(fila, 3).setBackground(QBrush(QColor(255, 0, 0)))  # Cambiar el color de fondo a rojo
             else:
                 self.tabla.setItem(fila, 3, QTableWidgetItem(str(producto['stock'])))
 
@@ -237,14 +237,12 @@ class Ventana_inventario(Codigo):
         boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.confirmar_insercion)
-        self.asignacion_tecla(self.ventana_principal, "Return", boton_confirmar)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar_insercion)
-        self.asignacion_tecla(self.ventana_principal, "Esc", boton_cancelar)
 
         layout1.addWidget(imagen)
         layout1.addItem(self.espacio(50, 50))
@@ -384,14 +382,12 @@ class Ventana_inventario(Codigo):
         boton_confirmar.setFixedWidth(200)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.confirmar_edicion)
-        self.asignacion_tecla(self.ventana_principal, "Return", boton_confirmar)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setFixedWidth(200)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar_edicion)
-        self.asignacion_tecla(self.ventana_principal, "Esc", boton_cancelar)
 
         layout1.addWidget(imagen)
         layout1.addItem(self.espacio(50, 50))

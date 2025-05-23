@@ -210,11 +210,7 @@ class Ventana_compras(Codigo):
         respuesta = aviso.exec()
         if respuesta == 2:
             self.base_datos.eliminar_proveedor(id_proveedor)
-            self.mensaje_informacion("Proveedor eliminado", "El proveedor ha sido eliminado con éxito.")
             self.proveedores()
-        
-        elif respuesta == 3:
-            self.mensaje_informacion("Eliminación cancelada", "El proveedor no ha sido eliminado")
 
     def agregar_proveedor(self):
         # Cada que se complete una insercion o elemiminacion el Layout se tiene que volver a poner como none (esto no es definitivo)
@@ -422,7 +418,6 @@ class Ventana_compras(Codigo):
 
         try:
             self.base_datos.agregar_proveedor(nombre, direccion, email, telefono)
-            self.mensaje_informacion("Proveedor agregado", "El proveedor ha sido agregado con éxito.")
             self.limpieza_layout(self.layout_extra)
             self.proveedores()
         except Exception as e:
@@ -441,7 +436,6 @@ class Ventana_compras(Codigo):
         try:
             id_proveedor = int(self.tabla_proveedores.item(self.tabla_proveedores.currentRow(), 0).text())
             self.base_datos.editar_proveedor(id_proveedor, nombre, direccion, email, telefono)
-            self.mensaje_informacion("Proveedor editado", "El proveedor ha sido editado con éxito.")
             self.limpieza_layout(self.layout_extra)
             self.proveedores()
         except Exception as e:
@@ -741,9 +735,6 @@ class Ventana_compras(Codigo):
                 precio_unitario = orden[2]
                 self.base_datos.agregar_detalle_compra(id_orden, id_compra, cantidad, precio_unitario, cantidad)
 
-            self.mensaje_informacion("Orden de compra generada", "La orden de compra se ha generado correctamente.")
-
-            # Limpiar tabla y resetear
             self.tabla_ingreso.clearContents()
             self.tabla_ingreso.setRowCount(0)
             self.tabla_ingreso.setColumnCount(4)
@@ -1083,6 +1074,7 @@ class Ventana_compras(Codigo):
         boton_cancelar.setFixedHeight(50)
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         boton_cancelar.clicked.connect(self.cancelar_orden_compra)
 
         layout1.addWidget(self.ingreso_busqueda)
@@ -1199,7 +1191,6 @@ class Ventana_compras(Codigo):
             # Cambiar el estado de la orden a 1 (confirmada)
             self.base_datos.confirmar_orden_compra(id_orden)
 
-            self.mensaje_informacion("Ingreso confirmado", "El ingreso se ha registrado correctamente.")
             # Recargar la tabla de compras
             self.ordenes_compra()
             # Limpiar la tabla de ingreso
