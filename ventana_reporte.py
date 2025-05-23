@@ -830,8 +830,8 @@ class Ventana_reporte(Codigo):
             c.drawCentredString(width / 2, 50, "Sistema de Gestión Comercial - Reporte generado automáticamente")
 
             c.save()
+            self.imprimir_reporte(file_path, "¿Imprimir reporte?", "¿Desea imprimir el reporte?")
 
-            self.mensaje_informacion("PDF Generado", f"Reporte de ventas por producto guardado en:\n{file_path}")
         except Exception as e:
             self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
 

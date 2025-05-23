@@ -90,6 +90,8 @@ class Ventana_compras(Codigo):
 
         self.layout.addLayout(main_layout)
 
+    def servicios(self):
+        pass
 
     def proveedores(self):
         self.limpieza_layout(self.layout3)
