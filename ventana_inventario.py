@@ -54,7 +54,7 @@ class Ventana_inventario(Codigo):
         self.boton_busqueda.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.color_boton_sin_oprimir(self.boton_busqueda)
         self.boton_busqueda.clicked.connect(self.buscar_producto)
-        self.asignacion_tecla(self.ventana_principal, "Enter", self.boton_busqueda)
+        self.asignacion_tecla(self.ventana_principal, "Return", self.boton_busqueda)
         
         self.ingreso_busqueda = QLineEdit()
         self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")

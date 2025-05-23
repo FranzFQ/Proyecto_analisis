@@ -530,6 +530,7 @@ class Ventana_compras(Codigo):
         self.color_boton_sin_oprimir(self.boton_buscar)
         self.boton_buscar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.boton_buscar.clicked.connect(self.buscar_producto)
+        self.asignacion_tecla(self.ventana_principal, "Return", self.boton_buscar)
 
         self.ingreso_busqueda = QLineEdit()
         self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")
@@ -1026,6 +1027,7 @@ class Ventana_compras(Codigo):
         self.boton_buscar.setIconSize(QSize(55, 55))
         self.color_boton_sin_oprimir(self.boton_buscar)
         self.boton_buscar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        
 
         self.ingreso_busqueda = QLineEdit()
         self.ingreso_busqueda.setPlaceholderText("Ingrese el ID del orden")
@@ -1079,8 +1081,8 @@ class Ventana_compras(Codigo):
 
         boton_cancelar.clicked.connect(self.cancelar_orden_compra)
 
-        layout1.addWidget(self.ingreso_busqueda)
-        layout1.addWidget(self.boton_buscar)
+        # layout1.addWidget(self.ingreso_busqueda)
+        # layout1.addWidget(self.boton_buscar)
 
         layout_tabla1.addLayout(layout1)
         layout_tabla1.addWidget(self.tabla_compras)
