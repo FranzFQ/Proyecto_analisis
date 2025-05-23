@@ -542,7 +542,7 @@ class Ventana_reporte(Codigo):
         seleccion_label.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
         self.opcion = QComboBox()
-        self.opcion.addItems(["Ventas", "Compras"])
+        self.opcion.addItems(["Ventas", "Compras", "Ventas por Producto"])
         self.color_caja_opciones(self.opcion)
         self.tipo = self.opcion.currentText
 
@@ -634,7 +634,9 @@ class Ventana_reporte(Codigo):
             # Generar el PDF del reporte de compras
             self.generar_reporte_compras(reporte, fecha_inicio, fecha_fin)
             pass
-
+        elif tipo_reporte == "Ventas por Producto":
+            reporte = self.base_datos.obtener_reporte_ventas_por_producto(fecha_inicio, fecha_fin)
+            self.generar_pdf_ventas_por_producto(reporte, fecha_inicio, fecha_fin)
         
         self.nueva_ventana.close()
 
@@ -736,6 +738,103 @@ class Ventana_reporte(Codigo):
             
         except Exception as e:
             self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
+
+    def safe_int(value):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return 0
+    def generar_pdf_ventas_por_producto(self, reporte, fecha_inicio, fecha_fin):
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.pdfgen import canvas
+            from datetime import datetime
+            from PyQt6.QtWidgets import QFileDialog
+
+            # Formato de fecha
+            if hasattr(fecha_inicio, 'strftime'):
+                fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d')
+            else:
+                fecha_inicio_str = str(fecha_inicio)
+            
+            if hasattr(fecha_fin, 'strftime'):
+                fecha_fin_str = fecha_fin.strftime('%Y-%m-%d')
+            else:
+                fecha_fin_str = str(fecha_fin)
+
+            # Diálogo para guardar
+            file_path, _ = QFileDialog.getSaveFileName(
+                self.layout.parentWidget(),
+                "Guardar Reporte de Ventas por Producto",
+                f"Ventas_Por_Producto_{fecha_inicio_str}_a_{fecha_fin_str}.pdf",
+                "PDF Files (*.pdf)"
+            )
+
+            if not file_path:
+                return  # Cancelado
+
+            c = canvas.Canvas(file_path, pagesize=letter)
+            width, height = letter
+
+            # Encabezado
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(100, height - 80, "REPORTE DE VENTAS POR PRODUCTO")
+            c.setFont("Helvetica", 10)
+            c.drawString(100, height - 110, f"Período: {fecha_inicio_str} a {fecha_fin_str}")
+            c.drawString(100, height - 130, f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            c.drawString(100, height - 150, f"Total de productos reportados: {len(reporte)}")
+
+            # Tabla
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(100, height - 190, "DETALLE DE PRODUCTOS VENDIDOS")
+            c.line(100, height - 195, width - 100, height - 195)
+
+            y_position = height - 220
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(80, y_position, "ID")
+            c.drawString(120, y_position, "Producto")
+            c.drawString(300, y_position, "Cantidad")
+            c.drawString(370, y_position, "Precio Unitario")
+            c.drawString(470, y_position, "Total Generado")
+            y_position -= 20
+
+            c.setFont("Helvetica", 10)
+
+            total_general = 0
+            total_cantidad = 0
+
+            for prod in reporte:
+                if y_position < 100:
+                    c.showPage()
+                    y_position = height - 50
+                    c.setFont("Helvetica", 10)
+
+                c.drawString(80, y_position, str(prod['IdProducto']))
+                c.drawString(120, y_position, str(prod['Producto']))
+                c.drawString(300, y_position, str(prod['CantidadVendida']))
+                c.drawString(370, y_position, f"Q{prod['PrecioUnitario']:.2f}")
+                c.drawString(470, y_position, f"Q{prod['TotalGenerado']:.2f}")
+                total_general += prod['TotalGenerado']
+                total_cantidad += prod['CantidadVendida']
+                y_position -= 20
+
+            # Totales
+            c.setFont("Helvetica-Bold", 12)
+            c.line(100, y_position - 10, width - 100, y_position - 10)
+            c.drawString(100, y_position - 30, "TOTALES:")
+            c.drawString(300, y_position - 30, str(total_cantidad))
+            c.drawString(470, y_position - 30, f"Q{total_general:.2f}")
+
+            # Pie
+            c.setFont("Helvetica-Oblique", 8)
+            c.drawCentredString(width / 2, 50, "Sistema de Gestión Comercial - Reporte generado automáticamente")
+
+            c.save()
+
+            self.mensaje_informacion("PDF Generado", f"Reporte de ventas por producto guardado en:\n{file_path}")
+        except Exception as e:
+            self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
+
 
     def generar_reporte_compras(self, reporte, fecha_inicio, fecha_fin):
         try:

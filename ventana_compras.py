@@ -1,7 +1,7 @@
 from codigo import Codigo
-from PyQt6.QtWidgets import QDialog, QComboBox, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem, QHeaderView 
+from PyQt6.QtWidgets import QDateEdit, QDialog, QComboBox, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem, QHeaderView 
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QDate
 from datetime import datetime
 
 class Ventana_compras(Codigo):
@@ -90,8 +90,6 @@ class Ventana_compras(Codigo):
 
         self.layout.addLayout(main_layout)
 
-    def servicios(self):
-        pass
 
     def proveedores(self):
         self.limpieza_layout(self.layout3)

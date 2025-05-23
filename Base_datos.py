@@ -281,8 +281,30 @@ class BaseDatos:
 
     # =======================
     # MÉTODOS DE REPORTES
-    # =======================
+        # =======================
+    def obtener_reporte_ventas_por_producto(self, fecha_inicio, fecha_fin):
+        """
+        Devuelve una lista de productos vendidos entre dos fechas con su cantidad total y total generado.
+        """
+        with self.conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    p.id AS IdProducto,
+                    p.nombre AS Producto,
+                    SUM(dv.cantidad) AS CantidadVendida,
+                    p.precio AS PrecioUnitario,
+                    SUM(dv.cantidad * p.precio) AS TotalGenerado
+                FROM 
+                    venta v
+                    INNER JOIN detalle_venta dv ON v.id = dv.Venta_id
+                    INNER JOIN producto p ON p.id = dv.Producto_id
+                WHERE 
+                    DATE(v.fecha) BETWEEN %s AND %s
+                GROUP BY p.id
+                ORDER BY CantidadVendida DESC
+            """, (fecha_inicio, fecha_fin))
 
+        return cursor.fetchall()
     def obtener_ventas_dia(self, fecha): # Devolver IdVenta, Producto, Cantidad, Precio
         # Obtener los productos vendidos en un día
         with self.conexion.cursor() as cursor:
