@@ -108,6 +108,10 @@ class Ventana_inventario(Codigo):
             for col in range(6):
                 item = self.tabla.item(fila, col)
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        # Ocultal la columna 6 de existencia mínima
+        self.tabla.setColumnHidden(0, True)
+        self.tabla.setColumnHidden(6, True)
+
 
         # Opcional: Ajustar el tamaño de las columnas al contenido
         # self.tabla.resizeColumnsToContents()

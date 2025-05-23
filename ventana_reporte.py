@@ -214,13 +214,18 @@ class Ventana_reporte(Codigo):
 
         fecha = self.tabla.item(fila, 0).text()
         # Devolver IdVenta, Producto, Cantidad, Precio
-        detalle_vendidos = self.base_datos.obtener_ventas_dia(fecha) 
+        if self.orden_tabla.currentText() == "Día":
+            detalle_vendidos = self.base_datos.obtener_ventas_dia(fecha) 
+        elif self.orden_tabla.currentText() == "Mes":
+            detalle_vendidos = self.base_datos.obtener_ventas_mes(fecha)
+        else:
+            detalle_vendidos = {}
             
 
         self.detalle_venta = QTableWidget(len(detalle_vendidos), 4)
         self.detalle_venta.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
-        self.detalle_venta.setHorizontalHeaderLabels(["IdVenta", "Producto", "Cantidad", "Precio"])
+        self.detalle_venta.setHorizontalHeaderLabels(["IdProducto", "Producto", "Cantidad", "Precio"])
 
         for fila, producto in enumerate(detalle_vendidos):
 
@@ -248,22 +253,27 @@ class Ventana_reporte(Codigo):
 
         self.layout2.addLayout(layout1)
 
-    # Función que manejará los cambios
     def actualizar_vista(self):
         texto = self.orden_tabla.currentText()  # Obtiene el texto seleccionado
         if self.verificacion is not None:
             self.limpieza_layout(self.verificacion)
 
+        try:
+            self.tabla.cellDoubleClicked.disconnect()
+        except TypeError:
+            # No había conexiones activas
+            pass
+
         if texto == "Día":
-            # self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
             reporte = self.base_datos.obtener_reporte_ventas_por_dia()
+            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
         elif texto == "Mes":
             reporte = self.base_datos.obtener_reporte_ventas_por_mes()
+            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
         elif texto == "Año":
             reporte = self.base_datos.obtener_reporte_ventas_por_anio()
         elif texto == "Todas":
             reporte = self.base_datos.obtener_reporte_ventas()
-
             self.tabla.setHorizontalHeaderLabels(["IdVenta", "Empleado", "Fecha", "Total"])
             self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             self.tabla.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -274,7 +284,6 @@ class Ventana_reporte(Codigo):
         # Limpiar la tabla antes de llenarla
         self.tabla.clearContents()
         self.generar_tabla(reporte)
-
 
     def generar_tabla(self, reporte):
         # Limpiar la tabla antes de llenarla
@@ -769,7 +778,7 @@ class Ventana_reporte(Codigo):
             # Encabezados de tabla
             y_position = height - 220
             headers = ["Fecha", "Orden #", "Proveedor", "Total (Q)", "Productos"]
-            positions = [100, 150, 200, 350, 450]
+            positions = [100, 175, 250, 350, 450]
             
             c.setFont("Helvetica-Bold", 10)
             for pos, header in zip(positions, headers):
@@ -811,7 +820,6 @@ class Ventana_reporte(Codigo):
             c.drawString(100, y_position - 30, "TOTALES:")
             c.drawString(350, y_position - 30, f"Q{total_gastado:.2f}")
             c.drawString(450, y_position - 30, str(total_productos))
-            c.drawString(530, y_position - 30, f"Q{promedio_orden:.2f}")
 
             # 6. Resumen estadístico
             y_position -= 60
