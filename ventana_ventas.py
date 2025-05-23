@@ -380,7 +380,7 @@ class Ventana_ventas(Codigo):
             file_path, _ = QFileDialog.getSaveFileName(
                 self.layout.parentWidget(),
                 "Guardar Comprobante",
-                f"Venta_{id_venta}_{fecha_venta}.pdf",
+                "C:/Users/queme/Desktop/ventas/" + f"Venta_{id_venta}_{fecha_venta}.pdf", 
                 "PDF Files (*.pdf)"
             )
             
