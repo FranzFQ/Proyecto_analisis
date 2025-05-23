@@ -680,13 +680,19 @@ class Ventana_compras(Codigo):
         # Hacer más grande el cuadro de diálogo
         dialogo.setMinimumSize(300, 150)
         dialogo.setMaximumSize(300, 150)
-        # Colocar los colores de la ventana
-        self.fondo_degradado(dialogo, "#5DA9F5", "#0037FF")
+        # Colocar los colores de la ventana 
+        self.fondo_degradado(dialogo,  "#5DA9F5", "#5DA9F5")
+        dialogo.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
         label = QLabel("Seleccione un proveedor:")
+        self.color_linea(label)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setFixedHeight(30)
+        label.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(label)
 
         combo_proveedores = QComboBox()
+        self.color_caja_opciones(combo_proveedores)
         proveedores = self.base_datos.obtener_proveedores()  # Debe retornar lista de tuplas: (id, nombre)
         
         if not proveedores:
@@ -704,10 +710,20 @@ class Ventana_compras(Codigo):
 
         # Botones Aceptar y Cancelar
         botones = QHBoxLayout()
+
         btn_aceptar = QPushButton("Aceptar")
+        self.color_boton_sin_oprimir(btn_aceptar)
+        btn_aceptar.setFixedHeight(30)
+        btn_aceptar.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+
         btn_cancelar = QPushButton("Cancelar")
+        self.color_boton_sin_oprimir(btn_cancelar)
+        btn_cancelar.setFixedHeight(30)
+        btn_cancelar.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        
         botones.addWidget(btn_aceptar)
         botones.addWidget(btn_cancelar)
+
         layout.addLayout(botones)
 
         dialogo.setLayout(layout)
