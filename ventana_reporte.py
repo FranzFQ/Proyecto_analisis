@@ -766,7 +766,7 @@ class Ventana_reporte(Codigo):
             file_path, _ = QFileDialog.getSaveFileName(
                 self.layout.parentWidget(),
                 "Guardar Reporte de Ventas por Producto",
-                f"Ventas_Por_Producto_{fecha_inicio_str}_a_{fecha_fin_str}.pdf",
+                "C:/Users/queme/Desktop/reportes/" + f"Ventas_Por_Producto_{fecha_inicio_str}_a_{fecha_fin_str}.pdf",
                 "PDF Files (*.pdf)"
             )
 
