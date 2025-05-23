@@ -8,7 +8,6 @@ from reportlab.lib import colors
 from reportlab.platypus import Table, TableStyle
 from datetime import datetime
 
-
 class Ventana_reporte(Codigo):
     def __init__(self, main_layout, base_datos, botones, nivel, ventana_principal):
         super().__init__()
@@ -135,7 +134,7 @@ class Ventana_reporte(Codigo):
     def mostrar_detalles_venta(self, fila):
         if self.verificacion is not None:
             self.limpieza_layout(self.verificacion)
-
+            
         layout1 = QVBoxLayout()
         self.verificacion = layout1
 
@@ -675,8 +674,8 @@ class Ventana_reporte(Codigo):
             c.drawCentredString(width/2, 50, "Sistema de Gestión Comercial - Reporte generado automáticamente")
             
             c.save()
-            
-            self.mensaje_informacion("PDF Generado", f"Reporte de ventas guardado en:\n{file_path}")
+
+            self.imprimir_reporte(file_path, "¿Imprimir reporte?", "¿Desea imprimir el reporte?")
             
         except Exception as e:
             self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
@@ -800,12 +799,8 @@ class Ventana_reporte(Codigo):
 
             # 8. Guardar PDF
             c.save()
-            
-            QMessageBox.information(
-                self.layout.parentWidget(),
-                "PDF Generado",
-                f"El reporte de compras se ha guardado en:\n{file_path}"
-            )
+            # 9. Imprimir reporte
+            self.imprimir_reporte(file_path, "¿Imprimir reporte?", "¿Desea imprimir el reporte?")
             return True
             
         except Exception as e:
@@ -815,7 +810,6 @@ class Ventana_reporte(Codigo):
                 f"No se pudo generar el reporte:\n{str(e)}"
             )
             return False
-
 
     def cancelar_reporte(self):
         self.nueva_ventana.close()

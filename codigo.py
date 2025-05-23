@@ -2,6 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow ,QWidget, QPushButton, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QComboBox, QDateEdit 
 from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor, QBrush, QPalette, QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
+import sys, os
 
 class Codigo:
     def __init__(self):    
@@ -20,6 +21,23 @@ class Codigo:
         paleta = window.palette()
         paleta.setBrush(QPalette.ColorRole.Window, pincel)
         window.setPalette(paleta)
+
+    def imprimir_reporte(self, Direccion, titulo, mensaje):
+        aviso = QMessageBox()
+        aviso.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
+        aviso.setWindowIcon(QIcon("imagenes/infomation.ico"))
+        aviso.setWindowTitle(titulo)
+        aviso.setText(mensaje)
+        aviso.setIcon(QMessageBox.Icon.Information)
+        aviso.addButton("Si", QMessageBox.ButtonRole.YesRole)
+        aviso.addButton("No", QMessageBox.ButtonRole.NoRole)
+        respuesta = aviso.exec()
+        if respuesta == 2:
+            if sys.platform == "win32":
+                try:
+                    os.startfile(Direccion, "print")
+                except Exception as e:
+                    self.mensaje_error("Error", f"No se pudo imprimir el archivo: {e}")
 
     def conversion_color(self, hex_color):
         hex_color = hex_color.lstrip('#')
@@ -64,6 +82,7 @@ class Codigo:
 
     def color_boton__bloqueado(self, boton: QPushButton):
         boton.setStyleSheet("QPushButton {background-color: #78ADEB; border: 3px solid black; border-radius: 5px;} QPushButton:hover {background-color: #788AEA;} QPushButton:pressed {background-color: #B178EB;}")
+        
     def imagen(self, ruta, ancho, alto):
         imagen = QPixmap(ruta)
         imagen = imagen.scaled(ancho, alto, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
@@ -84,7 +103,7 @@ class Codigo:
         self.color_boton_sin_oprimir(botones[4])
 
     def color_tabla(self, tabla):
-        tabla.setStyleSheet("QTableWidget {background-color: white; border: 5px solid black;} QTableWidget::item {background-color: 00f4ff; color: black;} QTableWidget::item:selected {background-color: #1fdde5; color: black;} QTableWidget::item:hover {background-color: #4cd9df; color: black;} QHeaderView::section {background-color: #94fbff; color: black;}")
+        tabla.setStyleSheet("QTableWidget {background-color: white; border: 5px solid black;} QTableWidget::item {color: black;} QTableWidget::item:selected {background-color: #1fdde5; color: black;} QTableWidget::item:hover {background-color: #4cd9df; color: black;} QHeaderView::section {background-color: #00B4D8; color: black;}")
 
     def ventana_maxima(self, window: QWidget):
         window.showFullScreen()

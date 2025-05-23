@@ -54,6 +54,7 @@ class Ventana_ventas(Codigo):
         self.color_boton_sin_oprimir(boton_buscar)
         boton_buscar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_buscar.clicked.connect(self.buscar_producto)
+        self.asignacion_tecla(self.ventana_principal, "Return", boton_buscar)
         
         inventario = self.base_datos.obtener_productos_ventas()
 
@@ -183,12 +184,14 @@ class Ventana_ventas(Codigo):
         boton_confirmar.setFixedSize(100, 20)
         boton_confirmar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_confirmar.clicked.connect(self.confirmar_modificar_cantidad)
+        self.asignacion_tecla(self.nueva_ventana, "Return", boton_confirmar)
 
         boton_cancelar = QPushButton("Cancelar")
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setFixedSize(100, 20)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         boton_cancelar.clicked.connect(self.cancelar_cantidad)
+        self.asignacion_tecla(self.nueva_ventana, "Esc", boton_cancelar)
 
         layout1.addWidget(boton_confirmar)
         layout1.addWidget(boton_cancelar)
@@ -320,9 +323,6 @@ class Ventana_ventas(Codigo):
 
             # Actualizar la tabla de ventas
             self.tabla1.setItem(fila, 3, QTableWidgetItem(str(nuevo_stock)))
-
-            # Por simplicidad, solo se muestra un mensaje de éxito
-            self.mensaje_informacion("Agregar al carrito", f"Se ha agregado {cantidad} de {nombre_producto} al carrito. Total: Q{total_producto:.2f}")
             
             # Cerrar la ventana de cantidad
             self.nueva_ventana.close()
@@ -347,15 +347,16 @@ class Ventana_ventas(Codigo):
             self.base_datos.agregar_detalle_venta(id_producto, id_venta, stock_venta, precio)
 
         # Preguntar si desea generar PDF
-        respuesta = QMessageBox.question(
-            self.layout.parentWidget(), 
-            "Generar comprobante",
-            "¿Desea generar un comprobante en PDF de esta venta?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.Yes
-        )
-        
-        if respuesta == QMessageBox.StandardButton.Yes:
+        respuesta = QMessageBox()
+        respuesta.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
+        respuesta.setWindowIcon(QIcon("imagenes/infomation.ico"))
+        respuesta.setWindowTitle("¿Generar comprobante?")
+        respuesta.setText("¿Desea generar un comprobante en PDF de esta venta?")
+        respuesta.setIcon(QMessageBox.Icon.Information)
+        respuesta.addButton("Si", QMessageBox.ButtonRole.YesRole)
+        respuesta.addButton("No", QMessageBox.ButtonRole.NoRole)
+        respuesta = respuesta.exec()
+        if respuesta == 2:
             self.generar_pdf_venta(id_venta)
         
         self.tabla2.clearContents()
@@ -365,8 +366,7 @@ class Ventana_ventas(Codigo):
         self.total.clear()
         self.total.setText("Total de compra: Q0")
         self.fila_carrito = 0
-        self.total_venta = 0
-        self.mensaje_informacion("Venta confirmada", "La venta se ha realizado con éxito")        
+        self.total_venta = 0   
 
     def generar_pdf_venta(self, id_venta):
         try:
@@ -442,7 +442,7 @@ class Ventana_ventas(Codigo):
             
             c.save()
             
-            self.mensaje_informacion("PDF Generado", f"Comprobante guardado en:\n{file_path}")
+            self.imprimir_reporte(file_path, "¿Imprimir ticket?", "¿Desea imprimir el ticket de la venta?")
             
         except Exception as e:
             self.mensaje_error("Error en PDF", f"No se pudo generar el comprobante:\n{str(e)}")
@@ -478,7 +478,6 @@ class Ventana_ventas(Codigo):
         self.total.setText("Total de compra: Q0")
         self.total_venta = 0
         self.fila_carrito = 0
-        self.mensaje_informacion("Venta cancelada", "La venta se ha cancelado")
 
     def cancelar_cantidad(self):
         self.nueva_ventana.close()

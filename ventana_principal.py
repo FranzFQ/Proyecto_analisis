@@ -173,6 +173,3 @@ class Ventana_principal(Codigo):
 
             self.window2.close()
             self.window1.inicio()
-        
-        elif respuesta == 3:
-            self.mensaje_informacion("Cierre de sesión cancelado", "La sesión no se ha cerrado")

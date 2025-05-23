@@ -59,6 +59,7 @@ class Ventana_usuarios(Codigo):
         self.boton_busqueda.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.color_boton_sin_oprimir(self.boton_busqueda)
         self.boton_busqueda.clicked.connect(self.buscar_usuario)
+        self.asignacion_tecla(self.boton_busqueda, "Return", self.boton_busqueda)
         
 
         self.ingreso_busqueda = QLineEdit()
