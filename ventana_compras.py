@@ -1,7 +1,7 @@
 from codigo import Codigo
-from PyQt6.QtWidgets import QInputDialog, QApplication ,QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem, QHeaderView 
-from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication, QLinearGradient, QColor, QBrush, QPalette
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QDateEdit, QDialog, QComboBox, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QMessageBox, QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem, QHeaderView 
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize, QDate
 from datetime import datetime
 
 class Ventana_compras(Codigo):
@@ -58,6 +58,14 @@ class Ventana_compras(Codigo):
         self.boton_ordenes.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.boton_ordenes.clicked.connect(self.ordenes_compra)
 
+        # Agregar botón de servicios, que permitirá hacer los pagos de luz, agua, etc.
+        self.boton_servicios = QPushButton()
+        self.boton_servicios.setIcon(QIcon(self.imagen("imagenes/servicios.png", 90, 90)))
+        self.boton_servicios.setIconSize(QSize(100, 100))
+        self.color_boton_sin_oprimir(self.boton_servicios)
+        self.boton_servicios.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.boton_servicios.clicked.connect(self.servicios)
+
         informar = QLabel("Oprima uno de los botones que tiene en la parte superior izquierda")
         informar.setStyleSheet("color: Black; font-size: 20px")
         informar.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -67,6 +75,7 @@ class Ventana_compras(Codigo):
         layout1.addWidget(self.boton_proveedores)
         layout1.addWidget(self.boton_pedido)
         layout1.addWidget(self.boton_ordenes)
+        # layout1.addWidget(self.boton_servicios)
         layout1.addStretch()
         
         self.layout3.addStretch()
@@ -80,7 +89,8 @@ class Ventana_compras(Codigo):
         main_layout.addLayout(layout2)
 
         self.layout.addLayout(main_layout)
-    
+
+
     def proveedores(self):
         self.limpieza_layout(self.layout3)
         self.color_boton_oprimido(self.boton_proveedores)
@@ -523,9 +533,10 @@ class Ventana_compras(Codigo):
         self.boton_buscar.setIconSize(QSize(55, 55))
         self.color_boton_sin_oprimir(self.boton_buscar)
         self.boton_buscar.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.boton_buscar.clicked.connect(self.buscar_producto)
 
         self.ingreso_busqueda = QLineEdit()
-        self.ingreso_busqueda.setPlaceholderText("Ingrese el ID del orden")
+        self.ingreso_busqueda.setPlaceholderText("Ingrese el nombre del producto...")
         self.color_linea(self.ingreso_busqueda)
         self.ingreso_busqueda.setFixedHeight(60)
         self.ingreso_busqueda.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -573,7 +584,7 @@ class Ventana_compras(Codigo):
         boton_cancelar.setFixedHeight(50)
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        boton_cancelar.clicked.connect(self.cancelar_orden_compra) # Cancelará la orden de compra
+        boton_cancelar.clicked.connect(self.cancelar_orden_ingreso) # Cancelará la orden de compra
 
         layout1.addWidget(self.ingreso_busqueda)
         layout1.addWidget(self.boton_buscar)
@@ -598,32 +609,141 @@ class Ventana_compras(Codigo):
         self.layout3.addLayout(layout_tabla1)
         self.layout3.addLayout(layout_tabla2)
 
+    def buscar_producto(self):
+        # Buscar el producto por nombre en la base de datos
+        nombre_producto = self.ingreso_busqueda.text()
+        resultado = self.base_datos.buscar_producto_por_nombre(nombre_producto)
+        
+        if len(resultado) != 0:
+            # Limpiar la tabla antes de mostrar los resultados
+            self.tabla_inventario.clearContents()
+            self.tabla_inventario.setRowCount(len(resultado))
+            # Llenar la tabla con los resultados de la búsqueda
+            for fila, producto in enumerate(resultado):
+                id_item = QTableWidgetItem(str(producto['id']))
+                nombre_item = QTableWidgetItem(producto['nombre'])
+                descripcion_item = QTableWidgetItem(producto['descripcion'])
+                existencia_item = QTableWidgetItem(str(producto['stock']))
+                costo_item = QTableWidgetItem(f"Q{producto['costo']:.2f}")
+
+                # Añadir items a la tabla
+                self.tabla_inventario.setItem(fila, 0, id_item)
+                self.tabla_inventario.setItem(fila, 1, nombre_item)
+                self.tabla_inventario.setItem(fila, 2, descripcion_item)
+                self.tabla_inventario.setItem(fila, 3, existencia_item)
+                self.tabla_inventario.setItem(fila, 4, costo_item)
+
+        else:
+            self.mensaje_error("Error", "No se encontraron productos con ese nombre")
+
+        self.ingreso_busqueda.clear()
+
+
+
+    def eliminar_orden_ingreso(self):
+        fila = self.tabla_ingreso.currentRow()
+        if fila == -1:
+            self.mensaje_error("Error", "Seleccione un orden para eliminar.")
+            return
+        # Encabezados de tabla_ingreso: ["ID", "IdProducto", "Producto", "Precio Unitario", "Cantidad", "Cantidad Recibida"]
+        subtotal = float(self.tabla_ingreso.item(fila, 3).text()[1:]) * int(self.tabla_ingreso.item(fila, 2).text())
+        self.total_compra -= subtotal
+        self.total.setPlaceholderText(f"Total del ingreso: Q{self.total_compra:.2f}")
+
+        id_a_eliminar = int(self.tabla_ingreso.item(fila, 0).text())
+        self.carrito_ingreso = [item for item in self.carrito_ingreso if item[0] != id_a_eliminar]
+
+        self.tabla_ingreso.removeRow(fila)
+        self.fila_ingreso -= 1
+
+
+    def cancelar_orden_ingreso(self):
+        self.tabla_ingreso.clearContents()
+        self.tabla_ingreso.setRowCount(0)
+        self.tabla_ingreso.setColumnCount(4)
+        self.total.clear()
+        self.total.setPlaceholderText("Total del ingreso: Q0")
+        self.carrito_ingreso.clear()
+        self.total_compra = 0
+        self.fila_ingreso = 0
+        self.limpieza_layout(self.layout3)
+        self.ingreso_pedido()
+
 
     # Función para generar una orden de compra y enviarla a la base de datos
-
     def generar_orden_compra(self):
-        # Solicitar al usuario ingresar el ID del proveedor
-        id_proveedor, ok = QInputDialog.getText(None, "ID Proveedor", "Ingrese el ID del proveedor:")
-        if not ok or not id_proveedor.isdigit():
-            self.mensaje_error("Error", "ID de proveedor inválido.")
-            return
-        id_proveedor = int(id_proveedor)
         if not self.carrito_ingreso:
-            self.mensaje_error("Error", "No hay ordenes en el carrito.")
+            self.mensaje_error("Error", "No hay órdenes en el carrito.")
             return
+
+        # Crear ventana de selección de proveedor
+        dialogo = QDialog()
+        dialogo.setWindowTitle("Seleccionar proveedor")
+        layout = QVBoxLayout()
+        # Hacer más grande el cuadro de diálogo
+        dialogo.setMinimumSize(300, 150)
+        dialogo.setMaximumSize(300, 150)
+        # Colocar los colores de la ventana
+        self.fondo_degradado(dialogo, "#5DA9F5", "#0037FF")
+
+        label = QLabel("Seleccione un proveedor:")
+        layout.addWidget(label)
+
+        combo_proveedores = QComboBox()
+        proveedores = self.base_datos.obtener_proveedores()  # Debe retornar lista de tuplas: (id, nombre)
+        
+        if not proveedores:
+            self.mensaje_error("Error", "No hay proveedores registrados.")
+            return
+
+        proveedor_id_por_nombre = {}  # Para mapear el nombre al ID
+
+        for proveedor in proveedores:
+            nombre = proveedor["nombre"]
+            id_prov = proveedor["id"]
+            combo_proveedores.addItem(nombre)
+            proveedor_id_por_nombre[nombre] = id_prov
+            layout.addWidget(combo_proveedores)
+
+        # Botones Aceptar y Cancelar
+        botones = QHBoxLayout()
+        btn_aceptar = QPushButton("Aceptar")
+        btn_cancelar = QPushButton("Cancelar")
+        botones.addWidget(btn_aceptar)
+        botones.addWidget(btn_cancelar)
+        layout.addLayout(botones)
+
+        dialogo.setLayout(layout)
+
+        # Acción de botones
+        def aceptar():
+            dialogo.accept()
+
+        def cancelar():
+            dialogo.reject()
+
+        btn_aceptar.clicked.connect(aceptar)
+        btn_cancelar.clicked.connect(cancelar)
+
+        if dialogo.exec() != QDialog.DialogCode.Accepted:
+            return  # Usuario canceló
+
+        # Obtener ID del proveedor
+        nombre_seleccionado = combo_proveedores.currentText()
+        id_proveedor = proveedor_id_por_nombre[nombre_seleccionado]
+
         # Generar la orden de compra
         try:
-            # en compra: id, Proveedor_id, fecha, Empleado_id, total_compra
-            # en detalle_compra: orden_id, Compra_id, cantidad, precio_unitario
             id_compra = self.base_datos.agregar_compra(id_proveedor, datetime.now(), self.id_usuario, self.total_compra)
             for orden in self.carrito_ingreso:
                 id_orden = orden[0]
                 cantidad = orden[1]
                 precio_unitario = orden[2]
                 self.base_datos.agregar_detalle_compra(id_orden, id_compra, cantidad, precio_unitario, cantidad)
-            # El stock del orden se actualizará hasta que se confirme el ingreso (estado pase a 1)
+
             self.mensaje_informacion("Orden de compra generada", "La orden de compra se ha generado correctamente.")
-            # Limpiar la tabla de ingreso
+
+            # Limpiar tabla y resetear
             self.tabla_ingreso.clearContents()
             self.tabla_ingreso.setRowCount(0)
             self.tabla_ingreso.setColumnCount(4)
@@ -633,11 +753,10 @@ class Ventana_compras(Codigo):
             self.total_compra = 0
             self.fila_ingreso = 0
 
-
         except Exception as e:
             self.mensaje_error("Error", f"No se pudo generar la orden de compra: {str(e)}")
             return
-
+        
     def cancelar_orden_compra(self):
         # Limpiar la tabla de ingreso
         self.tabla_ingreso.clearContents()
@@ -964,6 +1083,7 @@ class Ventana_compras(Codigo):
         boton_cancelar.setFixedHeight(50)
         self.color_boton_sin_oprimir(boton_cancelar)
         boton_cancelar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        boton_cancelar.clicked.connect(self.cancelar_orden_compra)
 
         layout1.addWidget(self.ingreso_busqueda)
         layout1.addWidget(self.boton_buscar)
@@ -982,7 +1102,7 @@ class Ventana_compras(Codigo):
         self.color_boton_sin_oprimir(self.boton_eliminar_item)
         self.boton_eliminar_item.setFixedHeight(50)
         self.boton_eliminar_item.clicked.connect(self.eliminar_orden_ingreso)
-        layout_tabla2.addWidget(self.boton_eliminar_item)
+        # layout_tabla2.addWidget(self.boton_eliminar_item)
 
 
         self.layout3.addLayout(layout_tabla1)
@@ -1095,21 +1215,7 @@ class Ventana_compras(Codigo):
         except Exception as e:
             self.mensaje_error("Error", f"No se pudo registrar el ingreso: {str(e)}")
 
-    def eliminar_orden_ingreso(self):
-        fila = self.tabla_ingreso.currentRow()
-        if fila == -1:
-            self.mensaje_error("Error", "Seleccione un orden para eliminar.")
-            return
-        # Encabezados de tabla_ingreso: ["ID", "IdProducto", "Producto", "Precio Unitario", "Cantidad", "Cantidad Recibida"]
-        subtotal = float(self.tabla_ingreso.item(fila, 3).text()[1:]) * int(self.tabla_ingreso.item(fila, 5).text())
-        self.total_compra -= subtotal
-        self.total.setPlaceholderText(f"Total del ingreso: Q{self.total_compra:.2f}")
 
-        id_a_eliminar = int(self.tabla_ingreso.item(fila, 0).text())
-        self.carrito_ingreso = [item for item in self.carrito_ingreso if item[0] != id_a_eliminar]
-
-        self.tabla_ingreso.removeRow(fila)
-        self.fila_ingreso -= 1
 
     def cancelar_ingreso(self):
         self.tabla_ingreso.clearContents()
