@@ -158,7 +158,7 @@ class Ventana_reporte(Codigo):
         self.detalle_venta = QTableWidget(len(detalle_vendidos), 4)
         self.detalle_venta.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
-        self.detalle_venta.setHorizontalHeaderLabels(["IdOrden", "Producto", "Cantidad", "Total"])
+        self.detalle_venta.setHorizontalHeaderLabels(["IdOrden", "Producto", "Cantidad", "Precio"])
 
         for fila, producto in enumerate(detalle_vendidos):
 
@@ -192,19 +192,91 @@ class Ventana_reporte(Codigo):
         self.verificacion = None
         self.orden_tabla.setCurrentIndex(3)  
 
+    def mostrar_detalles_venta_dia(self, fila):
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
 
-    # Función que manejará los cambios
+        layout1 = QVBoxLayout()
+        self.verificacion = layout1
+
+        cartelera = QLabel("Detalles de la venta")
+        self.color_linea(cartelera)
+        cartelera.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        cartelera.setFixedHeight(50)
+        cartelera.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cartelera.setEnabled(False)
+
+        boton_cerrar = QPushButton("cerrar")
+        self.color_boton_sin_oprimir(boton_cerrar)
+        boton_cerrar.setFixedHeight(50)
+        boton_cerrar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        boton_cerrar.clicked.connect(self.limpieza_detalle_venta)
+
+        fecha = self.tabla.item(fila, 0).text()
+        # Devolver IdVenta, Producto, Cantidad, Precio
+        if self.orden_tabla.currentText() == "Día":
+            detalle_vendidos = self.base_datos.obtener_ventas_dia(fecha) 
+        elif self.orden_tabla.currentText() == "Mes":
+            detalle_vendidos = self.base_datos.obtener_ventas_mes(fecha)
+        else:
+            detalle_vendidos = {}
+            
+
+        self.detalle_venta = QTableWidget(len(detalle_vendidos), 4)
+        self.detalle_venta.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+
+        self.detalle_venta.setHorizontalHeaderLabels(["IdProducto", "Producto", "Cantidad", "Precio"])
+
+        for fila, producto in enumerate(detalle_vendidos):
+
+            id_item = QTableWidgetItem(f"{producto['IdVenta']}")
+            producto_item = QTableWidgetItem(producto['Producto'])
+            cantidad_item = QTableWidgetItem(f"{producto['Cantidad']}")
+            total_item = QTableWidgetItem(f"Q{producto['Precio']:.2f}") 
+            
+            self.detalle_venta.setItem(fila, 0, id_item)
+            self.detalle_venta.setItem(fila, 1, producto_item)
+            self.detalle_venta.setItem(fila, 2, cantidad_item)
+            self.detalle_venta.setItem(fila, 3, total_item)
+
+            for col in range(4):
+                item = self.detalle_venta.item(fila, col)
+                item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+
+        self.color_tabla(self.detalle_venta)
+        self.detalle_venta.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.detalle_venta.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        layout1.addWidget(cartelera)
+        layout1.addWidget(self.detalle_venta)
+        layout1.addWidget(boton_cerrar)
+
+        self.layout2.addLayout(layout1)
+
     def actualizar_vista(self):
         texto = self.orden_tabla.currentText()  # Obtiene el texto seleccionado
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
+
+        try:
+            self.tabla.cellDoubleClicked.disconnect()
+        except TypeError:
+            # No había conexiones activas
+            pass
+
         if texto == "Día":
             reporte = self.base_datos.obtener_reporte_ventas_por_dia()
+            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
         elif texto == "Mes":
             reporte = self.base_datos.obtener_reporte_ventas_por_mes()
+            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta_dia)
         elif texto == "Año":
             reporte = self.base_datos.obtener_reporte_ventas_por_anio()
         elif texto == "Todas":
-            # Hacer que al dar doble click en la tabla se abra la ventana de detalles
             reporte = self.base_datos.obtener_reporte_ventas()
+            self.tabla.setHorizontalHeaderLabels(["IdVenta", "Empleado", "Fecha", "Total"])
+            self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            self.tabla.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
             self.generar_tabla_todas_ventas(reporte)
             return
@@ -213,12 +285,12 @@ class Ventana_reporte(Codigo):
         self.tabla.clearContents()
         self.generar_tabla(reporte)
 
-
     def generar_tabla(self, reporte):
         # Limpiar la tabla antes de llenarla
         self.tabla.clearContents()
         self.tabla.setRowCount(len(reporte))
         self.tabla.setColumnCount(4)
+        self.tabla.setHorizontalHeaderLabels(["Fecha", "Ingresos", "Total de Productos vendidos", "Ganancias"])
         # Verificar si es orden de compra o venta
         for fila, registro in enumerate(reporte):
 
@@ -243,6 +315,9 @@ class Ventana_reporte(Codigo):
         self.color_tabla(self.tabla)
         self.tabla.setRowCount(len(reporte))
         self.tabla.setColumnCount(4)
+        self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
+
+
         # Verificar si es orden de compra o venta
         for fila, registro in enumerate(reporte):
 
@@ -319,6 +394,10 @@ class Ventana_reporte(Codigo):
     
     def actualizar_vista_compras(self):
         texto = self.orden_tabla_compras.currentText()  # Obtiene el texto seleccionado
+        if self.verificacion is not None:
+            self.limpieza_layout(self.verificacion)
+
+
         if texto == "Día":
             reporte = self.base_datos.obtener_reporte_compras_por_dia()
         elif texto == "Mes":
@@ -333,28 +412,6 @@ class Ventana_reporte(Codigo):
             return
         self.tabla.clearContents()
         self.generar_tabla_compras(reporte)
-
-    # Función que manejará los cambios
-    def actualizar_vista(self):
-        texto = self.orden_tabla.currentText()  # Obtiene el texto seleccionado
-        if texto == "Día":
-            reporte = self.base_datos.obtener_reporte_ventas_por_dia()
-        elif texto == "Mes":
-            reporte = self.base_datos.obtener_reporte_ventas_por_mes()
-        elif texto == "Año":
-            reporte = self.base_datos.obtener_reporte_ventas_por_anio()
-        elif texto == "Todas":
-            # Hacer que al dar doble click en la tabla se abra la ventana de detalles
-            reporte = self.base_datos.obtener_reporte_ventas()
-            self.tabla.cellDoubleClicked.connect(self.mostrar_detalles_venta)
-            self.generar_tabla_todas_ventas(reporte)
-            return
-
-        # Limpiar la tabla antes de llenarla
-        self.tabla.clearContents()
-        self.generar_tabla(reporte)
-
-
 
     def generar_tabla_compras(self, reporte):
         # Limpiar la tabla antes de llenarla
@@ -485,7 +542,7 @@ class Ventana_reporte(Codigo):
         seleccion_label.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
 
         self.opcion = QComboBox()
-        self.opcion.addItems(["Ventas", "Compras"])
+        self.opcion.addItems(["Ventas", "Compras", "Ventas por Producto"])
         self.color_caja_opciones(self.opcion)
         self.tipo = self.opcion.currentText
 
@@ -577,7 +634,9 @@ class Ventana_reporte(Codigo):
             # Generar el PDF del reporte de compras
             self.generar_reporte_compras(reporte, fecha_inicio, fecha_fin)
             pass
-
+        elif tipo_reporte == "Ventas por Producto":
+            reporte = self.base_datos.obtener_reporte_ventas_por_producto(fecha_inicio, fecha_fin)
+            self.generar_pdf_ventas_por_producto(reporte, fecha_inicio, fecha_fin)
         
         self.nueva_ventana.close()
 
@@ -680,6 +739,103 @@ class Ventana_reporte(Codigo):
         except Exception as e:
             self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
 
+    def safe_int(value):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return 0
+    def generar_pdf_ventas_por_producto(self, reporte, fecha_inicio, fecha_fin):
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.pdfgen import canvas
+            from datetime import datetime
+            from PyQt6.QtWidgets import QFileDialog
+
+            # Formato de fecha
+            if hasattr(fecha_inicio, 'strftime'):
+                fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d')
+            else:
+                fecha_inicio_str = str(fecha_inicio)
+            
+            if hasattr(fecha_fin, 'strftime'):
+                fecha_fin_str = fecha_fin.strftime('%Y-%m-%d')
+            else:
+                fecha_fin_str = str(fecha_fin)
+
+            # Diálogo para guardar
+            file_path, _ = QFileDialog.getSaveFileName(
+                self.layout.parentWidget(),
+                "Guardar Reporte de Ventas por Producto",
+                f"Ventas_Por_Producto_{fecha_inicio_str}_a_{fecha_fin_str}.pdf",
+                "PDF Files (*.pdf)"
+            )
+
+            if not file_path:
+                return  # Cancelado
+
+            c = canvas.Canvas(file_path, pagesize=letter)
+            width, height = letter
+
+            # Encabezado
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(100, height - 80, "REPORTE DE VENTAS POR PRODUCTO")
+            c.setFont("Helvetica", 10)
+            c.drawString(100, height - 110, f"Período: {fecha_inicio_str} a {fecha_fin_str}")
+            c.drawString(100, height - 130, f"Fecha de generación: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+            c.drawString(100, height - 150, f"Total de productos reportados: {len(reporte)}")
+
+            # Tabla
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(100, height - 190, "DETALLE DE PRODUCTOS VENDIDOS")
+            c.line(100, height - 195, width - 100, height - 195)
+
+            y_position = height - 220
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(80, y_position, "ID")
+            c.drawString(120, y_position, "Producto")
+            c.drawString(300, y_position, "Cantidad")
+            c.drawString(370, y_position, "Precio Unitario")
+            c.drawString(470, y_position, "Total Generado")
+            y_position -= 20
+
+            c.setFont("Helvetica", 10)
+
+            total_general = 0
+            total_cantidad = 0
+
+            for prod in reporte:
+                if y_position < 100:
+                    c.showPage()
+                    y_position = height - 50
+                    c.setFont("Helvetica", 10)
+
+                c.drawString(80, y_position, str(prod['IdProducto']))
+                c.drawString(120, y_position, str(prod['Producto']))
+                c.drawString(300, y_position, str(prod['CantidadVendida']))
+                c.drawString(370, y_position, f"Q{prod['PrecioUnitario']:.2f}")
+                c.drawString(470, y_position, f"Q{prod['TotalGenerado']:.2f}")
+                total_general += prod['TotalGenerado']
+                total_cantidad += prod['CantidadVendida']
+                y_position -= 20
+
+            # Totales
+            c.setFont("Helvetica-Bold", 12)
+            c.line(100, y_position - 10, width - 100, y_position - 10)
+            c.drawString(100, y_position - 30, "TOTALES:")
+            c.drawString(300, y_position - 30, str(total_cantidad))
+            c.drawString(470, y_position - 30, f"Q{total_general:.2f}")
+
+            # Pie
+            c.setFont("Helvetica-Oblique", 8)
+            c.drawCentredString(width / 2, 50, "Sistema de Gestión Comercial - Reporte generado automáticamente")
+
+            c.save()
+
+            self.mensaje_informacion("PDF Generado", f"Reporte de ventas por producto guardado en:\n{file_path}")
+        except Exception as e:
+            self.mensaje_error("Error en PDF", f"No se pudo generar el reporte:\n{str(e)}")
+
+
     def generar_reporte_compras(self, reporte, fecha_inicio, fecha_fin):
         try:
             # 1. Configurar diálogo para guardar archivo
@@ -721,7 +877,7 @@ class Ventana_reporte(Codigo):
             # Encabezados de tabla
             y_position = height - 220
             headers = ["Fecha", "Orden #", "Proveedor", "Total (Q)", "Productos"]
-            positions = [100, 150, 200, 350, 450]
+            positions = [100, 175, 250, 350, 450]
             
             c.setFont("Helvetica-Bold", 10)
             for pos, header in zip(positions, headers):
@@ -763,7 +919,6 @@ class Ventana_reporte(Codigo):
             c.drawString(100, y_position - 30, "TOTALES:")
             c.drawString(350, y_position - 30, f"Q{total_gastado:.2f}")
             c.drawString(450, y_position - 30, str(total_productos))
-            c.drawString(530, y_position - 30, f"Q{promedio_orden:.2f}")
 
             # 6. Resumen estadístico
             y_position -= 60
