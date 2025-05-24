@@ -58,7 +58,7 @@ class Codigo:
         mesaje_error = QMessageBox()
         mesaje_error.setIcon(QMessageBox.Icon.Warning)
         mesaje_error.setStyleSheet("QMessageBox { color: black; background-color: #FF0024;} QPushButton {color: black; background-color: #FF4866; border: 2px solid black; min-width: 50px; min-height: 20px; border-radius: 5px;} QPushButton:hover {background-color: #FF3D7E;} QPushButton:pressed {background-color: #FF0000;} QLabel{color: black;}")
-        mesaje_error.setWindowIcon(QIcon("imagenes/warning.ico")) 
+        mesaje_error.setWindowIcon(QIcon(self.generacion_directorio("imagenes/warning.ico"))) 
         mesaje_error.setWindowTitle(titulo)
         mesaje_error.setText(mensaje)
         mesaje_error.setDefaultButton(QMessageBox.StandardButton.Ok)
@@ -67,7 +67,7 @@ class Codigo:
     def mensaje_informacion(self, titulo, mensaje):
         mensaje_informacion = QMessageBox()
         mensaje_informacion.setStyleSheet("QMessageBox { color: black; background-color: #40BCFF;} QPushButton {color: black; background-color: #7C9DFF; border: 2px solid black; min-width: 50px; min-height: 20px; border-radius: 5px;} QPushButton:hover {background-color: #38B3F5;} QPushButton:pressed {background-color: #2268F5;} QLabel{color: black;}")
-        mensaje_informacion.setWindowIcon(QIcon("imagenes/infomation.ico"))
+        mensaje_informacion.setWindowIcon(QIcon(self.generacion_directorio("imagenes/infomation.ico")))
         mensaje_informacion.setWindowTitle(titulo)
         mensaje_informacion.setText(mensaje)
         mensaje_informacion.setIcon(QMessageBox.Icon.Information)
@@ -84,12 +84,12 @@ class Codigo:
         boton.setStyleSheet("QPushButton {background-color: #78ADEB; border: 3px solid black; border-radius: 5px;} QPushButton:hover {background-color: #788AEA;} QPushButton:pressed {background-color: #B178EB;}")
         
     def imagen(self, ruta, ancho, alto):
-        ruta = self.genracion_directorio(ruta)
+        ruta = self.generacion_directorio(ruta)
         imagen = QPixmap(ruta)
         imagen = imagen.scaled(ancho, alto, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         return imagen
     
-    def genracion_directorio(self, ruta):
+    def generacion_directorio(self, ruta):
             try:
                 base_path = sys._MEIPASS
             except Exception:
