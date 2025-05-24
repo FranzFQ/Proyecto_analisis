@@ -84,9 +84,17 @@ class Codigo:
         boton.setStyleSheet("QPushButton {background-color: #78ADEB; border: 3px solid black; border-radius: 5px;} QPushButton:hover {background-color: #788AEA;} QPushButton:pressed {background-color: #B178EB;}")
         
     def imagen(self, ruta, ancho, alto):
+        ruta = self.genracion_directorio(ruta)
         imagen = QPixmap(ruta)
         imagen = imagen.scaled(ancho, alto, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         return imagen
+    
+    def genracion_directorio(self, ruta):
+            try:
+                base_path = sys._MEIPASS
+            except Exception:
+                base_path = os.path.abspath(".")
+            return os.path.join(base_path, ruta)
 
     def activar_botones(self, botones: list[QPushButton]):
         botones[0].setEnabled(True)
